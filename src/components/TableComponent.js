@@ -188,8 +188,8 @@ const TableComponent = ({
       if (!bValue) return order === 'asc' ? 1 : -1;
       
       // Get column definition to determine type
-      const column = columns.find(col => col.field === orderBy);
-      const type = column ? column.type : 'text';
+      const colDef = columns.find(col => col.field === orderBy);
+      const type = colDef ? colDef.type : 'text';
       
       // Handle different data types
       if (type === 'date') {
@@ -220,7 +220,7 @@ const TableComponent = ({
           : valueB.localeCompare(valueA);
       }
     });
-  }, [data, order, orderBy, sortable]);
+  }, [data, order, orderBy, sortable, columns]);
 
   // Apply pagination to data if enabled
   const displayData = React.useMemo(() => {
