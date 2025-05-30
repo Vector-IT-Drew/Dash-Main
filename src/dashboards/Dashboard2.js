@@ -75,7 +75,7 @@ const Dashboard2 = () => {
 
   useEffect(() => {
     fetchData(filters);
-  }, [filters]);
+  }, [fetchData]);
 
   const handleApplyFilters = (newFilters) => {
     setFilters(newFilters);

@@ -26,7 +26,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 const Sidebar = ({ open, onToggle, onNavigate }) => {
   const [openDashboards, setOpenDashboards] = useState(true);
   const [openComparables, setOpenComparables] = useState(false);
-  const [openReports, setOpenReports] = useState(false);
   const [profileMenuAnchorEl, setProfileMenuAnchorEl] = useState(null);
   
   // Get user email from localStorage or use default

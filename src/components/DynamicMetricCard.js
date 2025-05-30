@@ -8,14 +8,6 @@ const getUniqueValues = (data, field) => {
   return [...new Set(data.map(row => row[field]).filter(Boolean))];
 };
 
-const getMetricOptions = (data) => {
-  if (!data.length) return [];
-  const sample = data[0];
-  return Object.keys(sample).filter(
-    key => typeof sample[key] === 'number' && !isNaN(sample[key])
-  );
-};
-
 const DynamicMetricCard = ({
   data = [],
   onFiltersChange,

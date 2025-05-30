@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Checkbox, Typography, Paper, TextField, FormControlLabel, Switch, CircularProgress, Chip } from '@mui/material';
+import { Box, Button, Checkbox, Typography, Paper, TextField, FormControlLabel, Switch, Chip } from '@mui/material';
 import TableComponent from './TableComponent';
 
 const FollowupEmail = ({ lead, onPrepareEmail }) => {

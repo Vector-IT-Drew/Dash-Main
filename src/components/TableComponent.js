@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Collapse, IconButton, Box, Button, TableSortLabel, CircularProgress, TablePagination, Typography, Tooltip } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp, DragIndicator } from '@mui/icons-material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Collapse, IconButton, Box, Button, TableSortLabel, CircularProgress, TablePagination, Typography } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
 import StatusIcon from './StatusIcon';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { formatCellValue } from '../utils/statusStyles';
-import CommentIcon from '@mui/icons-material/Comment';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -483,10 +482,6 @@ const TableComponent = ({
     }
   };
 
-  const handleActionClick = () => {
-    setTableWidth((prevWidth) => (prevWidth === '100%' ? '50%' : '100%'));
-  };
-
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -518,9 +513,10 @@ const TableComponent = ({
   }, [data, order, orderBy, sortable]);
 
   // Apply pagination to data if enabled
-  const displayData = pagination 
-    ? sortedData.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage)
-    : sortedData;
+  const displayData = React.useMemo(() => {
+    if (!pagination || !sortedData) return sortedData;
+    return sortedData.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
+  }, [sortedData, currentPage, currentRowsPerPage, pagination]);
 
   // CSV Export function
   const exportToCSV = () => {
@@ -690,9 +686,8 @@ const TableComponent = ({
                           key={col.field}
                           style={{
                             padding: col.type === 'iconButton' ? '0px' : (col.type === 'notes' ? '4px 8px' : cellPadding || '2px 4px'),
-                            paddingLeft: cellPaddingLeft,
-                            paddingRight: col.reduceRightPadding ? '0px' : undefined,
                             paddingLeft: col.reduceLeftPadding ? '0px' : cellPaddingLeft,
+                            paddingRight: col.reduceRightPadding ? '0px' : undefined,
                             color: col.color || cellTextColor,
                             minWidth: col.minWidth || '50px',
                             maxWidth: col.maxWidth || '200px',

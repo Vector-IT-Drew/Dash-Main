@@ -98,7 +98,7 @@ const Dashboard1 = ({ navigateToDashboard }) => {
 
   useEffect(() => {
     fetchData(filters);
-  }, [filters]);
+  }, [fetchData]);
 
   useEffect(() => {
     console.log('Selected Lead:', selectedLead);

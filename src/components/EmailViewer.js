@@ -1,21 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Typography, Paper, Tabs, Tab, Chip } from '@mui/material';
-import Draggable from 'react-draggable';
-
-// Dummy data for demonstration
-const dummyEmail = {
-  subject: "Welcome to Your New Apartment!",
-  to: ["jane.doe@email.com", "john.smith@email.com"],
-  cc: ["leasing@apartments.com"],
-  body: `<h2>Congratulations!</h2>
-<p>Dear Jane,</p>
-<p>We're excited to welcome you to your new home. Please review the attached documents and let us know if you have any questions.</p>
-<ul>
-  <li>Move-in Date: <strong>July 1, 2024</strong></li>
-  <li>Address: <strong>123 Main St, Apt 5A</strong></li>
-</ul>
-<p>Best,<br>The Leasing Team</p>`
-};
+import { Box, Button, TextField, Typography, Paper, Tabs } from '@mui/material';
 
 const EmailViewer = ({ emailData, onSend }) => {
   // Always call hooks at the top level

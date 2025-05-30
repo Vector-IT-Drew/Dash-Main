@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, Typography, Box, FormControl, Select, MenuItem, ToggleButtonGroup, ToggleButton, Chip } from '@mui/material';
 import { Bar, Pie, Line, Scatter } from 'react-chartjs-2';
 import { getGroupedMetricChartData, getDealStatusDistributionByUnitStatus, getUniqueUnitStatuses } from '../utils/metricCalculations';

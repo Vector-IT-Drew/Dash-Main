@@ -10,7 +10,6 @@ import {
   Button, 
   IconButton,
   Avatar,
-  Paper,
   Divider,
   CircularProgress
 } from '@mui/material';
@@ -24,7 +23,6 @@ const NotesComponent = ({ open, onClose, unitId, unitNumber, propertyName, onNot
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const endOfMessagesRef = useRef(null);
-  const currentUser = localStorage.getItem('full_name') || 'Anonymous User';
   const fullName = localStorage.getItem('full_name') || 'Anonymous User';
   const [firstName, ...lastNameParts] = fullName.split(' ');
   const lastName = lastNameParts.join(' ');

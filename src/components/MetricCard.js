@@ -69,29 +69,6 @@ const MetricCard = ({
   showDataLabels = true,
   stats = null
 }) => {
-  // Format value with unit (day/days, unit/units)
-  const formatValueWithUnit = () => {
-    if (value === undefined || value === null) return '';
-    
-    if (unit) {
-      return `${value} ${unit}`;
-    }
-    
-    // Auto-format common units
-    if (title.toLowerCase().includes('day')) {
-      return `${value} ${value === 1 ? 'day' : 'days'}`;
-    }
-    
-    if (title.toLowerCase().includes('unit') || 
-        title.toLowerCase().includes('application') ||
-        title.toLowerCase().includes('renewal') ||
-        title.toLowerCase().includes('prelease')) {
-      return `${value} ${value === 1 ? 'unit' : 'units'}`;
-    }
-    
-    return value.toString();
-  };
-
   // Determine trend icon and color
   const renderTrend = () => {
     if (trend === undefined || trend === null) return null;

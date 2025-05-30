@@ -2,35 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Tabs, Tab, Grid, Typography, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DraggableContainer from '../components/DraggableContainer';
-import BarChart from '../components/BarChart';
 import TableComponent from '../components/TableComponent';
 import FiltersComponent from '../components/FiltersComponent';
 import MetricCard from '../components/MetricCard';
 import { API_BASE_URL, getSessionKey } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-import { formatCellValue } from '../utils/statusStyles';
-import { 
-  preprocessData,
-  calculateDaysOnMarket, 
-  calculateTotalUnits, 
-  calculateDailyMoveOuts,
-  calculateUnitsByStatus,
-  calculateDistributionByField,
-  calculateDOMDistribution,
-  getCurrentVacancyCount,
-  getExpectedVacancyCount,
-  getDownUnitsMetric,
-  getAverageDaysOnMarket
-} from '../utils/metricCalculations';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import DescriptionIcon from '@mui/icons-material/Description';
-import CommentIcon from '@mui/icons-material/Comment';
-import NotesComponent from '../components/NotesComponent';
 import DynamicMetricCard from '../components/DynamicMetricCard';
 import DynamicMetricChart from '../components/DynamicMetricChart';
 import CircularProgress from '@mui/material/CircularProgress';
