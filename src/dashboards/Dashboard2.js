@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import DraggableContainer from '../components/DraggableContainer';
 import BarChart from '../components/BarChart';
 import TableComponent from '../components/TableComponent';
@@ -16,7 +16,6 @@ const Dashboard2 = () => {
   const [filters, setFilters] = useState({});
   const [emailData, setEmailData] = useState({});
   const [selectedLead, setSelectedLead] = useState(null);
-  const [tableWidth, setTableWidth] = useState('100%');
   const [isFollowupVisible, setFollowupVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -75,7 +74,7 @@ const Dashboard2 = () => {
 
   useEffect(() => {
     fetchData(filters);
-  }, [fetchData]);
+  }, [fetchData, filters]);
 
   const handleApplyFilters = (newFilters) => {
     setFilters(newFilters);
@@ -202,7 +201,6 @@ const Dashboard2 = () => {
             lead={selectedLead}
             onClose={() => {
               setFollowupVisible(false);
-              setTableWidth('100%');
             }}
           />
         )}

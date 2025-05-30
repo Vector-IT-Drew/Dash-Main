@@ -36,18 +36,6 @@ ChartJS.register(
   Filler
 );
 
-const underlineStyle = {
-  borderBottom: '2px solid #1976d2',
-  fontWeight: 500,
-  fontSize: '1em',
-  background: 'none',
-  border: 'none',
-  display: 'inline-block',
-  verticalAlign: 'middle',
-  margin: 0,
-  padding: 0,
-};
-
 // Match the exact colors from MetricCard
 const PIE_COLORS = [
   '#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#ffeb3b', '#607d8b', '#795548', '#bdbdbd'
@@ -156,14 +144,13 @@ const DynamicMetricChart = ({
 
   // For pie chart mode
   const unit_status_options = useMemo(() => getUniqueUnitStatuses(data), [data]);
-  const [selected_unit_status, setSelectedUnitStatus] = useState(unit_status_options[0] || '');
 
   // Get and sort deal status data
   const deal_status_data = useMemo(() => {
-    const arr = getDealStatusDistributionByUnitStatus(data, selected_unit_status);
+    const arr = getDealStatusDistributionByUnitStatus(data, unit_status_options[0] || '');
     // Sort descending by value
     return arr.sort((a, b) => b.value - a.value);
-  }, [data, selected_unit_status]);
+  }, [data, unit_status_options]);
 
   return (
     <Card sx={{ backgroundColor, height: '100%', display: 'flex', flexDirection: 'column' }}>

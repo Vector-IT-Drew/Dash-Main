@@ -153,7 +153,7 @@ const TableComponent = ({
   };
 
   const [openRow, setOpenRow] = useState(null);
-  const [tableWidth, setTableWidth] = useState('100%');
+  const [tableWidth] = useState('100%');
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('');
   
@@ -510,7 +510,7 @@ const TableComponent = ({
   const sortedData = React.useMemo(() => {
     if (!sortable || !orderBy) return data;
     return sortData(data, orderBy, order);
-  }, [data, order, orderBy, sortable]);
+  }, [data, order, orderBy, sortable, sortData]);
 
   // Apply pagination to data if enabled
   const displayData = React.useMemo(() => {
