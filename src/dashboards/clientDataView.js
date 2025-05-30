@@ -7,13 +7,27 @@ import FiltersComponent from '../components/FiltersComponent';
 import MetricCard from '../components/MetricCard';
 import { API_BASE_URL, getSessionKey } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
+import { 
+  preprocessData,
+  calculateTotalUnits, 
+  calculateDailyMoveOuts,
+  calculateUnitsByStatus,
+  calculateDistributionByField,
+  calculateDOMDistribution,
+  getCurrentVacancyCount,
+  getExpectedVacancyCount,
+  getDownUnitsMetric,
+  getAverageDaysOnMarket
+} from '../utils/metricCalculations';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+
+import NotesComponent from '../components/NotesComponent';
 import DynamicMetricCard from '../components/DynamicMetricCard';
 import DynamicMetricChart from '../components/DynamicMetricChart';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const ClientDataView = ({ navigateToDashboard }) => {
+const ClientDataView = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [tableData, setTableData] = useState([]);
   

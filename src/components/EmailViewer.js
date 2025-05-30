@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TextField, Typography, Paper, Tabs } from '@mui/material';
+import { Box, Button, TextField, Typography, Paper, Tabs, Tab } from '@mui/material';
 
 const EmailViewer = ({ emailData, onSend }) => {
   // Always call hooks at the top level
