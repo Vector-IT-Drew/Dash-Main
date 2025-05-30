@@ -366,18 +366,6 @@ const ClientDataView = () => {
 
   const unitStatusDistributionPosition = { x: 240, y: 100, width: 440, height: 280 };
 
-  const moveOutsChartData = {
-    labels: tableData.length > 0 ? metrics.dailyMoveOuts.chartData.labels : [],
-    datasets: [
-      {
-        data: tableData.length > 0 ? metrics.dailyMoveOuts.chartData.datasets[0].data : [],
-        fill: true,
-        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-        borderColor: 'rgba(255, 159, 64, 1)',
-      },
-    ],
-  };
-
   // Calculate occupancy data based on unit statuses
   const occupancyChartData = useMemo(() => {
     if (!tableData.length) {
@@ -1028,22 +1016,6 @@ const ClientDataView = () => {
             />
           </DraggableContainer>
 
-          {/* Units by Deal Status Card */}
-          {/* <DraggableContainer defaultPosition={{ x: 17 * gridSize, y: 16 * gridSize, width: 17 * gridSize, height: 7 * gridSize }}>
-            <MetricCard
-              title="Deal Status Distribution"
-              showChart={true}
-              chartType="pie"
-              showLegend={true}
-              chartData={metrics.dealStatusDistribution.chartData}
-              loading={metrics.dealStatusDistribution.loading}
-              iconColor="#9C27B0"
-              backgroundColor="#ffffff"
-              width="100%"
-              height="100%"
-            />
-          </DraggableContainer> */}
-
           {/* Unit Status Distribution Card */}
           <DraggableContainer 
             defaultPosition={{ ...unitStatusDistributionPosition}} 
@@ -1063,24 +1035,6 @@ const ClientDataView = () => {
               height="100%"
             />
           </DraggableContainer>
-
-          {/* DOM Distribution Card */}
-          {/* <DraggableContainer defaultPosition={{ x: 0 * gridSize, y: 24 * gridSize, width: 17 * gridSize, height: 7 * gridSize }}>
-            <MetricCard
-              title="Days on Market Distribution"
-              value={metrics.daysOnMarketDistribution?.stats?.average}
-              showChart={true}
-              chartType="histogram"
-              chartData={metrics.daysOnMarketDistribution?.chartData}
-              stats={metrics.daysOnMarketDistribution?.stats}
-              description={`${metrics.daysOnMarketDistribution?.stats?.count || 0} units on market`}
-              loading={metrics.daysOnMarketDistribution?.loading}
-              iconColor="#3F51B5"
-              backgroundColor="#ffffff"
-              width="100%"
-              height="100%"
-            />
-          </DraggableContainer> */}
 
           {/* Vacancy Cards */}
           <DraggableContainer 
@@ -1204,7 +1158,4 @@ const ClientDataView = () => {
 };
 
 export default ClientDataView;
-// import ClientDataView from './dashboards/clientDataView';
-
-{/* <Route path="/client-data-view" element={<ClientDataView />} /> */}
 

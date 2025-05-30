@@ -175,14 +175,17 @@ const TableComponent = ({
     return isNaN(date.getTime()) ? null : date;
   };
 
-  const sortData = (data, orderBy, order) => {
-    if (!orderBy) return data;
-    
+  const sortedData = React.useMemo(() => {
+    if (!sortable || !orderBy) return data;
+    // Inline sortData logic here
     return [...data].sort((a, b) => {
+      let aValue = a[orderBy];
+      let bValue = b[orderBy];
+      
       // Handle empty values
-      if (!a[orderBy] && !b[orderBy]) return 0;
-      if (!a[orderBy]) return order === 'asc' ? -1 : 1;
-      if (!b[orderBy]) return order === 'asc' ? 1 : -1;
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return order === 'asc' ? -1 : 1;
+      if (!bValue) return order === 'asc' ? 1 : -1;
       
       // Get column definition to determine type
       const column = columns.find(col => col.field === orderBy);
@@ -190,8 +193,8 @@ const TableComponent = ({
       
       // Handle different data types
       if (type === 'date') {
-        const dateA = parseDate(a[orderBy]);
-        const dateB = parseDate(b[orderBy]);
+        const dateA = parseDate(aValue);
+        const dateB = parseDate(bValue);
         
         // Handle null dates
         if (!dateA && !dateB) return 0;
@@ -204,19 +207,70 @@ const TableComponent = ({
       } 
       else if (type === 'number' || type === 'currency') {
         // Convert to numbers for numeric comparison
-        const numA = parseFloat(a[orderBy]) || 0;
-        const numB = parseFloat(b[orderBy]) || 0;
+        const numA = parseFloat(aValue) || 0;
+        const numB = parseFloat(bValue) || 0;
         return order === 'asc' ? numA - numB : numB - numA;
       } 
       else {
         // Default string comparison
-        const valueA = String(a[orderBy]).toLowerCase();
-        const valueB = String(b[orderBy]).toLowerCase();
+        const valueA = String(aValue).toLowerCase();
+        const valueB = String(bValue).toLowerCase();
         return order === 'asc' 
           ? valueA.localeCompare(valueB) 
           : valueB.localeCompare(valueA);
       }
     });
+  }, [data, order, orderBy, sortable]);
+
+  // Apply pagination to data if enabled
+  const displayData = React.useMemo(() => {
+    if (!pagination || !sortedData) return sortedData;
+    return sortedData.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
+  }, [sortedData, currentPage, currentRowsPerPage, pagination]);
+
+  // CSV Export function
+  const exportToCSV = () => {
+    // Get headers from columns
+    const headers = orderedColumns.map(col => col.headerName || col.field);
+    
+    // Convert data to CSV format
+    const csvData = data.map(row => 
+      orderedColumns.map(col => {
+        let value = row[col.field];
+        
+        // Handle different data types for CSV
+        if (value === null || value === undefined) {
+          return '';
+        }
+        
+        // Convert to string and escape quotes
+        value = String(value).replace(/"/g, '""');
+        
+        // Wrap in quotes if contains comma, newline, or quote
+        if (value.includes(',') || value.includes('\n') || value.includes('"')) {
+          return `"${value}"`;
+        }
+        
+        return value;
+      })
+    );
+    
+    // Combine headers and data
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n');
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${exportFileName}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const renderCellContent = (type, value, row, renderCell) => {
@@ -505,62 +559,6 @@ const TableComponent = ({
       setInternalRowsPerPage(newRowsPerPage);
       setInternalPage(0);
     }
-  };
-
-  const sortedData = React.useMemo(() => {
-    if (!sortable || !orderBy) return data;
-    return sortData(data, orderBy, order);
-  }, [data, order, orderBy, sortable, sortData]);
-
-  // Apply pagination to data if enabled
-  const displayData = React.useMemo(() => {
-    if (!pagination || !sortedData) return sortedData;
-    return sortedData.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
-  }, [sortedData, currentPage, currentRowsPerPage, pagination]);
-
-  // CSV Export function
-  const exportToCSV = () => {
-    // Get headers from columns
-    const headers = orderedColumns.map(col => col.headerName || col.field);
-    
-    // Convert data to CSV format
-    const csvData = data.map(row => 
-      orderedColumns.map(col => {
-        let value = row[col.field];
-        
-        // Handle different data types for CSV
-        if (value === null || value === undefined) {
-          return '';
-        }
-        
-        // Convert to string and escape quotes
-        value = String(value).replace(/"/g, '""');
-        
-        // Wrap in quotes if contains comma, newline, or quote
-        if (value.includes(',') || value.includes('\n') || value.includes('"')) {
-          return `"${value}"`;
-        }
-        
-        return value;
-      })
-    );
-    
-    // Combine headers and data
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => row.join(','))
-    ].join('\n');
-    
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${exportFileName}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (

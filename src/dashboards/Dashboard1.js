@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import DraggableContainer from '../components/DraggableContainer';
 import BarChart from '../components/BarChart';
@@ -63,7 +63,7 @@ const Dashboard1 = ({ navigateToDashboard }) => {
     ],
   };
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = useCallback(async (filters = {}) => {
     try {
       const sessionKey = getSessionKey();
       if (!sessionKey) {
@@ -94,7 +94,7 @@ const Dashboard1 = ({ navigateToDashboard }) => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
+  }, [navigate, setTableData, dataConfig.mapData]);
 
   useEffect(() => {
     fetchData(filters);

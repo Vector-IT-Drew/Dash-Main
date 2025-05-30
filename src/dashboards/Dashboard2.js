@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import DraggableContainer from '../components/DraggableContainer';
 import BarChart from '../components/BarChart';
@@ -19,7 +19,7 @@ const Dashboard2 = () => {
   const [isFollowupVisible, setFollowupVisible] = useState(false);
   const navigate = useNavigate();
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = useCallback(async (filters = {}) => {
     try {
       const sessionKey = getSessionKey();
       if (!sessionKey) {
@@ -48,7 +48,7 @@ const Dashboard2 = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
+  }, [navigate, setTableData, setSelectedLead]);
 
   const fetchEmailData = async (personId) => {
     console.log(`Fetching emails for person_id: ${personId}`);
