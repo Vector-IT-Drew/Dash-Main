@@ -9,7 +9,7 @@ export const statusColors = {
   // Deal status colors
   'active deal': { backgroundColor: '#e3f2fd', color: '#1565c0' }, // Pastel blue
   // Default color for unknown statuses
-  'default': { bg: '#f5f5f5', color: '#616161' }
+  'default': { backgroundColor: '#f5f5f5', color: '#616161' }
 };
 
 // Helper function to get status color
@@ -90,7 +90,6 @@ export const formatCellValue = (value, type) => {
             fontSize: '0.7rem',
             fontWeight: '600',
             border: `1px solid ${isPositive ? '#81c784' : '#e57373'}`, // Lighter pastel green/red for border
-            borderRadius: '6px',
             display: 'inline-block',
             lineHeight: '1',
             height: 'fit-content',
