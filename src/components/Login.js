@@ -33,8 +33,11 @@ const Login = () => {
         localStorage.setItem('first_name', data.first_name);
         localStorage.setItem('last_name', data.last_name);
         localStorage.setItem('full_name', `${data.first_name} ${data.last_name}`);
+        if (data.email_address) {
+          localStorage.setItem('email_address', data.email_address);
+        }
         // Redirect to dashboard
-        navigate('/Dash1');
+        navigate('/clientDataView');
       } else {
         setError('Invalid credentials. Please try again.');
       }

@@ -760,14 +760,14 @@ const ClientDataView = () => {
 
   return (
     <Box
-      style={{
-        position: 'relative',
-        width: '100%',
-        minHeight: '100vh',
-        height: 'auto',
-        overflow: 'hidden',
-        backgroundColor: '#ffffff'
-      }}
+    sx={{
+      position: 'relative',
+      width: '100%',
+      minHeight: '100vh',
+      height: 'auto',
+      overflow: 'hidden',
+      backgroundColor: '#ffffff'
+        }}
     >
       <Box sx={{ 
         position: 'absolute', 

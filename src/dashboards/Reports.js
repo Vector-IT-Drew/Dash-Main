@@ -77,8 +77,8 @@ const Reports = () => {
   const grouped = groupReportsByName(data);
 
   return (
-    <Box sx={{ p: 3,  mt:3}}>
-      <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+    <Box sx={{ p: 3,  mt:1.5, pt: 0}}>
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, pl: 5, mt: 0 }}>
         Reports
       </Typography>
       {loading ? (
@@ -89,7 +89,7 @@ const Reports = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableCell />
                 <TableCell>Name</TableCell>
                 <TableCell>Created At</TableCell>
@@ -142,84 +142,82 @@ const Reports = () => {
                         </Button>
                       </TableCell>
                     </TableRow>
-                    {reports.length > 1 && (
-                      <TableRow>
-                        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                          <Collapse in={openGroup === name} timeout="auto" unmountOnExit>
-                            <Box margin={1}>
-                              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                                All Reports
-                              </Typography>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell>Created At</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>File</TableCell>
-                                    <TableCell>Action</TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {reports.map((r) => {
-                                    const isPending = r.status === 'pending';
-                                    return (
-                                      <TableRow key={r.report_id}>
-                                        <TableCell>{formatDateTime(r.created_at)}</TableCell>
-                                        <TableCell>
-                                          <span
-                                            style={{
-                                              color:
-                                                r.status === 'completed'
-                                                  ? '#388e3c'
-                                                  : isPending
-                                                  ? '#bdbdbd'
-                                                  : '#f44336',
-                                              fontWeight: 500,
-                                              textTransform: 'capitalize',
-                                            }}
-                                          >
-                                            {r.status}
+                    <TableRow>
+                      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                        <Collapse in={openGroup === name} timeout="auto" unmountOnExit>
+                          <Box margin={1}>
+                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                              All Reports
+                            </Typography>
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                  <TableCell>Created At</TableCell>
+                                  <TableCell>Status</TableCell>
+                                  <TableCell>File</TableCell>
+                                  <TableCell>Action</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {reports.map((r) => {
+                                  const isPending = r.status === 'pending';
+                                  return (
+                                    <TableRow key={r.report_id}>
+                                      <TableCell>{formatDateTime(r.created_at)}</TableCell>
+                                      <TableCell>
+                                        <span
+                                          style={{
+                                            color:
+                                              r.status === 'completed'
+                                                ? '#388e3c'
+                                                : isPending
+                                                ? '#bdbdbd'
+                                                : '#f44336',
+                                            fontWeight: 500,
+                                            textTransform: 'capitalize',
+                                          }}
+                                        >
+                                          {r.status}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell>
+                                        {r.file_path ? (
+                                          <span style={{ color: isPending ? '#bdbdbd' : '#1976d2' }}>
+                                            {r.file_path.split('/').pop()}
                                           </span>
-                                        </TableCell>
-                                        <TableCell>
-                                          {r.file_path ? (
-                                            <span style={{ color: isPending ? '#bdbdbd' : '#1976d2' }}>
-                                              {r.file_path.split('/').pop()}
-                                            </span>
-                                          ) : (
-                                            '-'
-                                          )}
-                                        </TableCell>
-                                        <TableCell>
-                                          <Button
-                                            variant="contained"
-                                            size="small"
-                                            startIcon={<DownloadIcon />}
-                                            disabled={isPending}
-                                            sx={{
-                                              minWidth: 110,
-                                              backgroundColor: isPending ? '#e0e0e0' : undefined,
-                                              color: isPending ? '#888' : undefined,
-                                              boxShadow: 'none',
-                                              '&:hover': isPending
-                                                ? { backgroundColor: '#e0e0e0' }
-                                                : undefined,
-                                            }}
-                                            // onClick={() => ...} // download logic to be added later
-                                          >
-                                            Download
-                                          </Button>
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </Box>
-                          </Collapse>
-                        </TableCell>
-                      </TableRow>
-                    )}
+                                        ) : (
+                                          '-'
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button
+                                          variant="contained"
+                                          size="small"
+                                          startIcon={<DownloadIcon />}
+                                          disabled={isPending}
+                                          sx={{
+                                            minWidth: 110,
+                                            backgroundColor: isPending ? '#e0e0e0' : undefined,
+                                            color: isPending ? '#888' : undefined,
+                                            boxShadow: 'none',
+                                            '&:hover': isPending
+                                              ? { backgroundColor: '#e0e0e0' }
+                                              : undefined,
+                                          }}
+                                          // onClick={() => ...} // download logic to be added later
+                                        >
+                                          Download
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
                   </React.Fragment>
                 );
               })}
