@@ -8,6 +8,7 @@ import ClientDataView from './dashboards/clientDataView';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Reports from './dashboards/Reports';
+import DashboardTemplate from './dashboards/dashboard_template/DashboardTemplate';
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -60,6 +61,7 @@ function App() {
                 <Reports />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard-template" element={<DashboardTemplate />} />
           </Routes>
         </Box>
       </Box>

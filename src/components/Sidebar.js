@@ -248,6 +248,17 @@ const Sidebar = ({ open, onToggle, onNavigate }) => {
                 </ListItemIcon>
                 <ListItemText primary="Reports" />
               </ListItemButton>
+
+              {/* Dashboard Template direct link (not in a folder) */}
+              <ListItemButton
+                sx={{ borderRadius: '8px', mb: 0.5, mt: 1 }}
+                onClick={() => { onNavigate('/dashboard-template'); onToggle(); }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <DashboardIcon sx={{ color: '#6366f1' }} />
+                </ListItemIcon>
+                <ListItemText primary="Dashboard Template" />
+              </ListItemButton>
             </List>
           </Box>
           {/* User profile section at the very bottom */}

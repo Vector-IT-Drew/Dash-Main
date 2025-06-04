@@ -128,6 +128,19 @@ const ClientDataView = () => {
       const rentChangeFormatted = rentChange !== null ? 
         (rentChange >= 0 ? `+${rentChange.toFixed(2)}%` : `${rentChange.toFixed(2)}%`) : '-';
 
+      // Add tenant_info_display field
+      const tenantInfoDisplay = (() => {
+        let tenants = item.tenant_info;
+        if (typeof tenants === 'string') {
+          try { tenants = JSON.parse(tenants); } catch { tenants = []; }
+        }
+        if (Array.isArray(tenants) && tenants.length > 0) {
+          const t = tenants[0];
+          return `${t.first_name || ''} ${t.last_name || ''}`.trim();
+        }
+        return '-';
+      })();
+
       return {
         id: item.id || 0,
         address: item.address || '-',
@@ -136,6 +149,7 @@ const ClientDataView = () => {
         beds: item.beds || '-',
         baths: item.baths || '-',
         sqft: item.sqft || '-',
+        tenant_info_display: tenantInfoDisplay,
         unit_status: item.unit_status || '-',
         deal_status: item.deal_status || '-',
         previous_deal_status: item.previous_deal_status || '-',
@@ -176,6 +190,7 @@ const ClientDataView = () => {
       { field: 'beds', headerName: 'Beds', type: 'number', minWidth: '40px', maxWidth: '40px', fontSize: '0.8rem' },
       { field: 'baths', headerName: 'Baths', type: 'number', minWidth: '55px', maxWidth: '55px', fontSize: '0.8rem' },
       { field: 'sqft', headerName: 'Sqft', type: 'number', minWidth: '65px', maxWidth: '65px', fontSize: '0.8rem' },
+      { field: 'tenant_info_display', headerName: 'Tenant Info', type: 'text', minWidth: '140px', maxWidth: '180px', fontSize: '0.8rem' },
       { field: 'unit_status', headerName: 'Unit Status', type: 'badge', minWidth: '110px', maxWidth: '110px', fontSize: '0.8rem' },
       { field: 'deal_status', headerName: 'Deal Status', type: 'badge', minWidth: '120px', maxWidth: '120px', fontSize: '0.8rem' },
       { field: 'gross', headerName: 'Gross', type: 'currency', minWidth: '80px', maxWidth: '80px', fontSize: '0.8rem', reduceRightPadding: true },

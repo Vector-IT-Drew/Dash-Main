@@ -52,27 +52,49 @@ const Reports = () => {
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState(null);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      setLoading(true);
-      try {
-        const sessionKey = getSessionKey();
-        const params = new URLSearchParams({
-          session_key: sessionKey,
-          query_id: 'get_reports',
-        }).toString();
-        const res = await fetch(`${API_BASE_URL}/run_query?${params}`);
-        const result = await res.json();
-        if (result.status === 'success') {
-          setData(result.data);
-        }
-      } catch (e) {
-        setData([]);
+  // Refetch logic extracted for reuse
+  const fetchReports = async () => {
+    setLoading(true);
+    try {
+      const sessionKey = getSessionKey();
+      const params = new URLSearchParams({
+        session_key: sessionKey,
+        query_id: 'get_reports',
+      }).toString();
+      const res = await fetch(`${API_BASE_URL}/run_query?${params}`);
+      const result = await res.json();
+      if (result.status === 'success') {
+        setData(result.data);
       }
-      setLoading(false);
-    };
+    } catch (e) {
+      setData([]);
+    }
+    setLoading(false);
+  };
+  useEffect(() => {
     fetchReports();
   }, []);
+
+  // Generate report handler
+  const handleGenerate = async (reportName) => {
+    const sessionKey = getSessionKey();
+    // Fire and forget
+    fetch(`${API_BASE_URL}/generate_report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Access-Control-Allow-Origin': '*'   // <-- THIS DOES NOTHING!
+        },
+        body: JSON.stringify({
+          session_key: sessionKey,
+          report_name: reportName,
+        }),
+    });
+    // Wait a short moment before refreshing, so the new report can be picked up
+    setTimeout(() => {
+      fetchReports();
+    }, 1200);
+  };
 
   const grouped = groupReportsByName(data);
 
@@ -104,14 +126,12 @@ const Reports = () => {
                   <React.Fragment key={name}>
                     <TableRow hover>
                       <TableCell>
-                        {reports.length > 1 && (
-                          <IconButton
-                            size="small"
-                            onClick={() => setOpenGroup(openGroup === name ? null : name)}
-                          >
-                            {openGroup === name ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                          </IconButton>
-                        )}
+                        <IconButton
+                          size="small"
+                          onClick={() => setOpenGroup(openGroup === name ? null : name)}
+                        >
+                          {openGroup === name ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                        </IconButton>
                       </TableCell>
                       <TableCell>{latest.name}</TableCell>
                       <TableCell>{formatDateTime(latest.created_at)}</TableCell>
@@ -137,6 +157,7 @@ const Reports = () => {
                           size="small"
                           color="primary"
                           sx={{ minWidth: 100, fontWeight: 500 }}
+                          onClick={() => handleGenerate(latest.name)}
                         >
                           Generate
                         </Button>
