@@ -79,7 +79,7 @@ const Reports = () => {
   const handleGenerate = async (reportName) => {
     const sessionKey = getSessionKey();
     // Fire and forget - just call the endpoint without waiting for response
-    fetch(`${API_BASE_URL}/generate_report`, {
+    fetch(`${API_BASE_URL}/reports/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
