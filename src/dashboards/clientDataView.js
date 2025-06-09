@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Tabs, Tab, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Box, Tabs, Tab, IconButton } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DraggableContainer from '../components/DraggableContainer';
 import TableComponent from '../components/TableComponent';
@@ -334,10 +334,6 @@ const ClientDataView = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  const handleApplyFilters = (newFilters) => {
-    setFilters(newFilters);
-  };
-
   // Pagination handlers
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -515,7 +511,6 @@ const ClientDataView = () => {
 
   // Add state for settings menu
   const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
-  const isSettingsMenuOpen = Boolean(settingsAnchorEl);
   
   // Handle settings menu open
   const handleSettingsClick = (event) => {
@@ -525,64 +520,6 @@ const ClientDataView = () => {
   // Handle settings menu close
   const handleSettingsClose = () => {
     setSettingsAnchorEl(null);
-  };
-  
-  // Reset dashboard layout
-  const handleResetLayout = () => {
-    // Get all keys from localStorage that match the current dashboard
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith(`dashboard-client-data-view-component-`)) {
-        keysToRemove.push(key);
-      }
-    }
-    
-    // Remove all matching keys
-    keysToRemove.forEach(key => {
-      localStorage.removeItem(key);
-    });
-    
-    // Reload the page to apply default positions
-    window.location.reload();
-    
-    // Close the menu
-    handleSettingsClose();
-  };
-
-  // Reset datatable layout (column order, sorting, etc.)
-  const handleResetTableLayout = () => {
-    // Reset table column order
-    const tableKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith('table-columns-')) {
-        tableKeys.push(key);
-      }
-    }
-    
-    // Remove all table-related keys
-    tableKeys.forEach(key => {
-      localStorage.removeItem(key);
-    });
-    
-    // Reset sorting state
-    setOrder('asc');
-    setOrderBy('');
-    
-    // Reset pagination
-    setPage(0);
-    setRowsPerPage(50);
-    
-    // Force a re-render of the table by temporarily setting tableData to empty and back
-    setTableData([]);
-    setTimeout(() => {
-      // Reload the page to ensure all table components reset properly
-      window.location.reload();
-    }, 100);
-    
-    // Close the menu
-    handleSettingsClose();
   };
 
   const fetchUnitDeals = async (unitId) => {

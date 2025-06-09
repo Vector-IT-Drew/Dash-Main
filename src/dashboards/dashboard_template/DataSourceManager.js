@@ -83,7 +83,7 @@ export function useDataSources(config) {
       console.log('🧹 useDataSources cleanup');
       isMounted = false;
     };
-  }, []); // REMOVED config dependency - only run once!
+  }, [config.dataSources]); // Add config.dataSources dependency to re-fetch when data sources change
 
   return { data, loading };
 }

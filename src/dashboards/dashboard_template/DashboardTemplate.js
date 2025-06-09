@@ -26,7 +26,7 @@ const customTheme = createTheme({
 
 export default function DashboardTemplate() {
   const [tabIdx, setTabIdx] = useState(0);
-  const [config, setConfig] = useState(dashboardConfig);
+  const [config] = useState(dashboardConfig);
   const { data, loading } = useDataSources(config);
   const tab = config.tabs[tabIdx];
 
