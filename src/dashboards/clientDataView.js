@@ -747,8 +747,8 @@ const ClientDataView = () => {
   };
 
   const quickTabs = [
-    { label: 'Prelease', value: 'Prelease' },
-    { label: 'Renewal Check', value: 'Renewal Check' }
+    { label: '4/1/25 Onwards', value: '4/1/25 onwards' },
+    { label: 'Renewal Horizon', value: 'renewal horizon' }
     // Add more tabs as needed
     // {
     //   label: 'Renewal Check',
