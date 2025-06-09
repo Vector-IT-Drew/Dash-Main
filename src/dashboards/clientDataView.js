@@ -720,18 +720,21 @@ const ClientDataView = () => {
           columnHeight={24}
           pagination={false}
           showHeaders={false}
-          enableExport={false}
-          // Custom cell renderer for tenant_info_display
+          enableExport={true}
+          exportFileName="client_data"
           customCellRenderers={{
-            tenant_info_display: (value, dealRow) => (
+            tenant_info_display: (value, row) => (
               value === '-' ? (
                 <span style={{ color: '#888', opacity: 0.7 }}>{value}</span>
               ) : (
                 <span
-                  style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'opacity 0.15s',
+                  }}
                   onClick={e => {
                     e.stopPropagation();
-                    setTenantInfoModalTenants(dealRow.tenant_info_full || []);
+                    setTenantInfoModalTenants(row.tenant_info_full || []);
                     setTenantInfoModalOpen(true);
                   }}
                   onMouseOver={e => { e.currentTarget.style.opacity = 0.7; }}
@@ -740,8 +743,7 @@ const ClientDataView = () => {
                   {value}
                 </span>
               )
-            ),
-            move_out: renderMoveOutDate
+            )
           }}
         />
       </Box>
@@ -771,6 +773,21 @@ const ClientDataView = () => {
     fetchData(mergedFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mergedFilters]);
+
+  // Dynamic columns configuration based on selected quick tab
+  const dynamicColumns = useMemo(() => {
+    const baseColumns = dataConfig.columns.map(col => {
+      if (col.field === 'move_out' && selectedQuickTab === 'renewal horizon') {
+        console.log('🎨 Setting move_out column to date_color_ascending for renewal horizon');
+        return {
+          ...col,
+          type: 'date_color_ascending'
+        };
+      }
+      return col;
+    });
+    return baseColumns;
+  }, [selectedQuickTab]);
 
   // Helper function to render move-out dates with renewal horizon coloring
   const renderMoveOutDate = (value, row) => {
@@ -875,7 +892,7 @@ const ClientDataView = () => {
         >
           <TableComponent
               data={tableData}
-              columns={dataConfig.columns}
+              columns={dynamicColumns}
               onRowClick={handleRowClick}
               renderExpandedContent={renderExpandedContent}
               rowHeight={35}
@@ -908,7 +925,6 @@ const ClientDataView = () => {
                   ) : (
                     <span
                       style={{
-                      
                         cursor: 'pointer',
                         transition: 'opacity 0.15s',
                       }}
@@ -923,8 +939,7 @@ const ClientDataView = () => {
                       {value}
                     </span>
                   )
-                ),
-                move_out: renderMoveOutDate
+                )
               }}
           />
         </Box>

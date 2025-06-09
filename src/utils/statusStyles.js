@@ -124,6 +124,33 @@ export const formatCellValue = (value, type) => {
           {formattedDate}
         </span>
       );
+    
+    case 'date_color_ascending':
+      if (!value || value === '-') {
+        return <span style={{ color: '#888', opacity: 0.7 }}>-</span>;
+      }
+      
+      try {
+        // Format the date first
+        const date = new Date(value);
+        const formattedDateColored = date instanceof Date && !isNaN(date) 
+          ? `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`
+          : '-';
+        
+        // Apply renewal horizon coloring
+        const colorStyle = getRenewalHorizonColor(value);
+        console.log('🎨 Applying date_color_ascending for:', value, 'style:', colorStyle);
+        
+        return (
+          <span style={colorStyle}>
+            {formattedDateColored}
+          </span>
+        );
+      } catch (e) {
+        console.error('❌ Error in date_color_ascending:', e);
+        return <span style={{ color: '#888', opacity: 0.7 }}>-</span>;
+      }
+
     case 'currency':
       if (value === '-') return '-';
       
