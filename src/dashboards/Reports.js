@@ -84,8 +84,8 @@ const Reports = () => {
       fetchReports();
     }, 1000);
     
-    // Start background API call (fire and forget, non-blocking)
-    (async () => {
+    // Background API call function
+    const generateInBackground = async () => {
       try {
         await fetch(`${API_BASE_URL}/reports/generate`, {
           method: 'POST',
@@ -105,7 +105,10 @@ const Reports = () => {
         // Even if there's an error, refresh to show current state
         fetchReports();
       }
-    })();
+    };
+    
+    // Start the background process (non-blocking)
+    generateInBackground();
   };
 
   // Download report handler
