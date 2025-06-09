@@ -51,6 +51,7 @@ const Reports = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
   // Refetch logic extracted for reuse
   const fetchReports = async () => {
@@ -77,6 +78,10 @@ const Reports = () => {
 
   // Generate report handler
   const handleGenerate = (reportName) => {
+    // Prevent multiple simultaneous requests
+    if (generating) return;
+    
+    setGenerating(true);
     const sessionKey = getSessionKey();
     
     // Just call the endpoint (fire and forget)
@@ -93,6 +98,11 @@ const Reports = () => {
     
     // Immediately refresh data
     fetchReports();
+    
+    // Re-enable the button after 3 seconds
+    setTimeout(() => {
+      setGenerating(false);
+    }, 3000);
   };
 
   // Download report handler
@@ -193,6 +203,7 @@ const Reports = () => {
                           color="primary"
                           sx={{ minWidth: 100, fontWeight: 500 }}
                           onClick={() => handleGenerate(latest.name)}
+                          disabled={generating}
                         >
                           Generate
                         </Button>
