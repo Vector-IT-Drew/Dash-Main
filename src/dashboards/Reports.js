@@ -84,31 +84,26 @@ const Reports = () => {
       fetchReports();
     }, 1000);
     
-    // Background API call function
-    const generateInBackground = async () => {
-      try {
-        await fetch(`${API_BASE_URL}/reports/generate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            session_key: sessionKey,
-            report_name: reportName,
-          }),
-        });
-        
-        // When background process completes, refresh data again
-        fetchReports();
-      } catch (error) {
-        console.error('Background report generation error:', error);
-        // Even if there's an error, refresh to show current state
-        fetchReports();
-      }
-    };
-    
-    // Start the background process (non-blocking)
-    generateInBackground();
+    // Fire-and-forget API call (completely non-blocking)
+    fetch(`${API_BASE_URL}/reports/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        session_key: sessionKey,
+        report_name: reportName,
+      }),
+    })
+    .then(() => {
+      // When background process completes, refresh data again
+      fetchReports();
+    })
+    .catch(error => {
+      console.error('Background report generation error:', error);
+      // Even if there's an error, refresh to show current state
+      fetchReports();
+    });
   };
 
   // Download report handler
