@@ -509,17 +509,10 @@ const ClientDataView = () => {
 
   const downUnits = getDownUnitsMetric(tableData);
 
-  // Add state for settings menu
-  const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
-  
   // Handle settings menu open
   const handleSettingsClick = (event) => {
-    setSettingsAnchorEl(event.currentTarget);
-  };
-  
-  // Handle settings menu close
-  const handleSettingsClose = () => {
-    setSettingsAnchorEl(null);
+    // Settings functionality can be added here in the future
+    console.log('Settings clicked');
   };
 
   const fetchUnitDeals = async (unitId) => {
