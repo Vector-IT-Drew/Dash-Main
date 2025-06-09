@@ -106,6 +106,42 @@ const Reports = () => {
     }
   };
 
+  // Download report handler
+  const handleDownload = async (filename) => {
+    try {
+      const sessionKey = getSessionKey();
+      const params = new URLSearchParams({
+        session_key: sessionKey,
+        filename: filename
+      }).toString();
+      
+      const response = await fetch(`${API_BASE_URL}/reports/download?${params}`);
+      
+      if (response.ok) {
+        // Create blob from response
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Download failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error downloading report:', error);
+    }
+  };
+
   const grouped = groupReportsByName(data);
 
   return (
@@ -235,7 +271,7 @@ const Reports = () => {
                                               ? { backgroundColor: '#e0e0e0' }
                                               : undefined,
                                           }}
-                                          // onClick={() => ...} // download logic to be added later
+                                          onClick={() => handleDownload(r.file_path.split('/').pop())}
                                         >
                                           Download
                                         </Button>
