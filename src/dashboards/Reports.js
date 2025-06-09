@@ -78,22 +78,22 @@ const Reports = () => {
   // Generate report handler
   const handleGenerate = async (reportName) => {
     const sessionKey = getSessionKey();
-    // Fire and forget
+    // Fire and forget - just call the endpoint without waiting for response
     fetch(`${API_BASE_URL}/generate_report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 'Access-Control-Allow-Origin': '*'   // <-- THIS DOES NOTHING!
         },
         body: JSON.stringify({
           session_key: sessionKey,
           report_name: reportName,
         }),
     });
-    // Wait a short moment before refreshing, so the new report can be picked up
+    
+    // Wait 3 seconds then refresh the reports data to show the new report
     setTimeout(() => {
       fetchReports();
-    }, 1200);
+    }, 3000);
   };
 
   const grouped = groupReportsByName(data);
