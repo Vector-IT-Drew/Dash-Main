@@ -76,7 +76,7 @@ const Reports = () => {
   }, []);
 
   // Generate report handler
-  const handleGenerate = async (reportName) => {
+  const handleGenerate = (reportName) => {
     const sessionKey = getSessionKey();
     
     // Immediate refresh after 1 second for user feedback
@@ -84,9 +84,10 @@ const Reports = () => {
       fetchReports();
     }, 1000);
     
-    // Fire the request and await the actual response in background
-    try {
-      await fetch(`${API_BASE_URL}/reports/generate`, {
+    // Start background API call (fire and forget, non-blocking)
+    (async () => {
+      try {
+        await fetch(`${API_BASE_URL}/reports/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -95,15 +96,16 @@ const Reports = () => {
             session_key: sessionKey,
             report_name: reportName,
           }),
-      });
-      
-      // When the actual response comes back, refresh again
-      fetchReports();
-    } catch (error) {
-      console.error('Error generating report:', error);
-      // Even if there's an error, refresh to show current state
-      fetchReports();
-    }
+        });
+        
+        // When background process completes, refresh data again
+        fetchReports();
+      } catch (error) {
+        console.error('Background report generation error:', error);
+        // Even if there's an error, refresh to show current state
+        fetchReports();
+      }
+    })();
   };
 
   // Download report handler
