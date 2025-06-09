@@ -33,6 +33,13 @@ export const getRenewalHorizonColor = (dateValue) => {
     const timeDiff = moveOutDate.getTime() - currentDate.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     
+    console.log('🔢 Date calculation:', {
+      originalDate: dateValue,
+      moveOutDate: moveOutDate.toISOString().split('T')[0],
+      currentDate: currentDate.toISOString().split('T')[0],
+      daysDiff
+    });
+    
     // Define color ranges - darker blue for dates further out
     let color, backgroundColor;
     
@@ -40,29 +47,35 @@ export const getRenewalHorizonColor = (dateValue) => {
       // Past dates - dark red
       color = '#fff';
       backgroundColor = '#d32f2f';
+      console.log('🔴 Past date - red');
     } else if (daysDiff <= 30) {
       // 0-30 days - light blue
       color = '#fff';
       backgroundColor = '#1976d2';
+      console.log('🔵 0-30 days - light blue');
     } else if (daysDiff <= 60) {
       // 31-60 days - medium blue
       color = '#fff';
       backgroundColor = '#1565c0';
+      console.log('🔵 31-60 days - medium blue');
     } else if (daysDiff <= 90) {
       // 61-90 days - darker blue
       color = '#fff';
       backgroundColor = '#0d47a1';
+      console.log('🔵 61-90 days - darker blue');
     } else if (daysDiff <= 180) {
       // 91-180 days - very dark blue
       color = '#fff';
       backgroundColor = '#0a3d8a';
+      console.log('🔵 91-180 days - very dark blue');
     } else {
       // 180+ days - darkest blue
       color = '#fff';
       backgroundColor = '#083372';
+      console.log('🔵 180+ days - darkest blue');
     }
     
-    return {
+    const styleObject = {
       color,
       backgroundColor,
       padding: '2px 6px',
@@ -73,7 +86,11 @@ export const getRenewalHorizonColor = (dateValue) => {
       minWidth: '70px',
       textAlign: 'center'
     };
+    
+    console.log('🎨 Final style object:', styleObject);
+    return styleObject;
   } catch (e) {
+    console.error('❌ Error in getRenewalHorizonColor:', e);
     return { color: '#999', backgroundColor: 'transparent' };
   }
 };

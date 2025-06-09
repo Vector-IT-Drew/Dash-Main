@@ -782,7 +782,9 @@ const ClientDataView = () => {
     
     // Apply renewal horizon coloring if that tab is selected
     if (selectedQuickTab === 'renewal horizon') {
+      console.log('🎨 Applying renewal horizon coloring for date:', value, 'selectedTab:', selectedQuickTab);
       const colorStyle = getRenewalHorizonColor(value);
+      console.log('🎨 Color style generated:', colorStyle);
       return (
         <span style={colorStyle}>
           {formattedDate}
@@ -790,7 +792,8 @@ const ClientDataView = () => {
       );
     }
 
-    // Default date rendering
+    // Default date rendering for other tabs
+    console.log('📅 Default date rendering for:', value, 'selectedTab:', selectedQuickTab);
     return <span>{formattedDate}</span>;
   };
 
