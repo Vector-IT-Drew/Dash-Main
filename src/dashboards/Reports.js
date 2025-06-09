@@ -51,7 +51,6 @@ const Reports = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState(null);
-  const [generating, setGenerating] = useState(false);
 
   // Refetch logic extracted for reuse
   const fetchReports = async () => {
@@ -78,31 +77,26 @@ const Reports = () => {
 
   // Generate report handler
   const handleGenerate = (reportName) => {
-    // Prevent multiple simultaneous requests
-    if (generating) return;
-    
-    setGenerating(true);
     const sessionKey = getSessionKey();
     
-    // Just call the endpoint (fire and forget)
-    fetch(`${API_BASE_URL}/reports/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        session_key: sessionKey,
-        report_name: reportName,
-      }),
-    });
-    
-    // Immediately refresh data
-    fetchReports();
-    
-    // Re-enable the button after 3 seconds
+    // Fire the generate endpoint in next tick (completely non-blocking)
     setTimeout(() => {
-      setGenerating(false);
-    }, 3000);
+      fetch(`${API_BASE_URL}/reports/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_key: sessionKey,
+          report_name: reportName,
+        }),
+      });
+    }, 0);
+    
+    // Wait 0.5 seconds then refresh data
+    setTimeout(() => {
+      fetchReports();
+    }, 500);
   };
 
   // Download report handler
@@ -203,7 +197,6 @@ const Reports = () => {
                           color="primary"
                           sx={{ minWidth: 100, fontWeight: 500 }}
                           onClick={() => handleGenerate(latest.name)}
-                          disabled={generating}
                         >
                           Generate
                         </Button>
