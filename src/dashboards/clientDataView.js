@@ -26,6 +26,8 @@ import NotesComponent from '../components/NotesComponent';
 import DynamicMetricCard from '../components/DynamicMetricCard';
 import DynamicMetricChart from '../components/DynamicMetricChart';
 import CircularProgress from '@mui/material/CircularProgress';
+import TenantInfoComponent from '../components/TenantInfoComponent';
+import QuickFilterTabs from '../components/QuickFilterTabs';
 
 const ClientDataView = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -150,6 +152,13 @@ const ClientDataView = () => {
         baths: item.baths || '-',
         sqft: item.sqft || '-',
         tenant_info_display: tenantInfoDisplay,
+        tenant_info_full: (() => {
+          let tenants = item.tenant_info;
+          if (typeof tenants === 'string') {
+            try { tenants = JSON.parse(tenants); } catch { tenants = []; }
+          }
+          return Array.isArray(tenants) ? tenants : [];
+        })(),
         unit_status: item.unit_status || '-',
         deal_status: item.deal_status || '-',
         previous_deal_status: item.previous_deal_status || '-',
@@ -180,7 +189,7 @@ const ClientDataView = () => {
         gross_change: grossChangeFormatted,
         gross_change_value: grossChange,
         rent_change: rentChangeFormatted,
-        rent_change_value: rentChange
+        rent_change_value: rentChange,
       };
     },
     columns: [
@@ -190,7 +199,7 @@ const ClientDataView = () => {
       { field: 'beds', headerName: 'Beds', type: 'number', minWidth: '40px', maxWidth: '40px', fontSize: '0.8rem' },
       { field: 'baths', headerName: 'Baths', type: 'number', minWidth: '55px', maxWidth: '55px', fontSize: '0.8rem' },
       { field: 'sqft', headerName: 'Sqft', type: 'number', minWidth: '65px', maxWidth: '65px', fontSize: '0.8rem' },
-      { field: 'tenant_info_display', headerName: 'Tenant Info', type: 'text', minWidth: '140px', maxWidth: '180px', fontSize: '0.8rem' },
+      { field: 'tenant_info_display', headerName: 'Tenants', type: 'text', minWidth: '120px', maxWidth: '120px', fontSize: '0.8rem' },
       { field: 'unit_status', headerName: 'Unit Status', type: 'badge', minWidth: '110px', maxWidth: '110px', fontSize: '0.8rem' },
       { field: 'deal_status', headerName: 'Deal Status', type: 'badge', minWidth: '120px', maxWidth: '120px', fontSize: '0.8rem' },
       { field: 'gross', headerName: 'Gross', type: 'currency', minWidth: '80px', maxWidth: '80px', fontSize: '0.8rem', reduceRightPadding: true },
@@ -673,15 +682,17 @@ const ClientDataView = () => {
     }
   };
 
+  // Add state for tenant info modal
+  const [tenantInfoModalOpen, setTenantInfoModalOpen] = useState(false);
+  const [tenantInfoModalTenants, setTenantInfoModalTenants] = useState([]);
+
   const renderExpandedContent = (row) => {
     const deals = unitDealsData[row.unit_id];
     if (!deals) return <Box p={2} textAlign="center"><CircularProgress size={24} /></Box>;
-    
     if (deals.length === 0) {
       return <Box p={2} textAlign="center">No deals found for this unit</Box>;
     }
 
-    // Format deals with EST dates - include spacer for alignment
     const formattedDeals = deals.map(deal => {
       // Calculate percentage changes for this deal
       const prevGross = parseFloat(deal.previous_gross) || 0;
@@ -696,20 +707,39 @@ const ClientDataView = () => {
       const rentChangeFormatted = rentChange !== null ? 
         (rentChange >= 0 ? `+${rentChange.toFixed(2)}%` : `${rentChange.toFixed(2)}%`) : '-';
 
+      // Add tenant info processing
+      const tenantInfoDisplay = (() => {
+        let tenants = deal.tenant_info;
+        if (typeof tenants === 'string') {
+          try { tenants = JSON.parse(tenants); } catch { tenants = []; }
+        }
+        if (Array.isArray(tenants) && tenants.length > 0) {
+          const t = tenants[0];
+          return `${t.first_name || ''} ${t.last_name || ''}`.trim();
+        }
+        return '-';
+      })();
+
       return {
         ...deal,
-        spacer_alignment: '', // Empty spacer for alignment
+        spacer_alignment: '',
         start_date: deal.start_date ? formatDateWithoutTimezoneShift(deal.start_date) : '-',
         expiry: deal.expiry ? formatDateWithoutTimezoneShift(deal.expiry) : '-',
         move_in: deal.move_in ? formatDateWithoutTimezoneShift(deal.move_in) : '-',
         move_out: deal.move_out ? formatDateWithoutTimezoneShift(deal.move_out) : '-',
-        // Add percentage change fields
         gross_change: grossChangeFormatted,
         gross_change_value: grossChange,
         rent_change: rentChangeFormatted,
         rent_change_value: rentChange,
-        spacer_alignment_end: '', // Empty spacer for alignment
-
+        spacer_alignment_end: '',
+        tenant_info_display: tenantInfoDisplay,
+        tenant_info_full: (() => {
+          let tenants = deal.tenant_info;
+          if (typeof tenants === 'string') {
+            try { tenants = JSON.parse(tenants); } catch { tenants = []; }
+          }
+          return Array.isArray(tenants) ? tenants : [];
+        })(),
       };
     });
 
@@ -717,7 +747,10 @@ const ClientDataView = () => {
     const dealColumns = [
       // Spacer to align with main table (dropdown + address + unit + lease_type + beds + baths + sqft + unit_status)
       { field: 'current_deal', headerName: '', type: 'current_deal_indicator', minWidth: '40px', maxWidth: '40px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
-      { field: 'spacer_alignment', headerName: '', type: 'text', minWidth: '630px', maxWidth: '630px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
+      { field: 'spacer_alignment', headerName: '', type: 'text', minWidth: '520px', maxWidth: '520px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
+      // Add tenant info column before deal status
+      { field: 'tenant_info_display', headerName: 'Tenant', type: 'text', minWidth: '227px', maxWidth: '227px', fontSize: '0.8rem' },
+      
       { field: 'deal_status', headerName: 'Deal Status', type: 'badge', minWidth: '120px', maxWidth: '120px', fontSize: '0.8rem'}, 
       { field: 'gross', headerName: 'Gross', type: 'currency', minWidth: '80px', maxWidth: '80px', fontSize: '0.8rem', reduceRightPadding: true}, 
       { field: 'gross_change', headerName: '', type: 'percentage_change', minWidth: '55px', maxWidth: '55px', fontSize: '0.7rem', reduceLeftPadding: true}, 
@@ -733,25 +766,14 @@ const ClientDataView = () => {
     ];
 
     return (
-      <Box sx={{ 
-        display: 'block', 
-        width: 'fit-content', // Let it size to content
-        backgroundColor: '#eee',
-        overflow: 'visible', // Allow overflow if needed
-        border: 'none',
-        borderRadius: 0,
-        margin: 0,
-        padding: 0,
-      }}>
+      <Box sx={{ display: 'block', width: 'fit-content', backgroundColor: '#eee', overflow: 'visible', border: 'none', borderRadius: 0, margin: 0, padding: 0 }}>
         <TableComponent
           data={formattedDeals}
           columns={dealColumns}
           onRowClick={() => {}}
           renderExpandedContent={() => {}}
           rowHeight={30}
-          nestedTableStyle={{
-            width: 'fit-content', // Let table size to content
-          }}
+          nestedTableStyle={{ width: 'fit-content' }}
           disableDropdown={true}
           backgroundColor="#f5f5f5"
           headerBackgroundColor="#f5f5f5"
@@ -766,12 +788,57 @@ const ClientDataView = () => {
           sortable={false}
           columnHeight={24}
           pagination={false}
-          showHeaders={false} // Show headers for clarity
+          showHeaders={false}
           enableExport={false}
+          // Custom cell renderer for tenant_info_display
+          customCellRenderers={{
+            tenant_info_display: (value, dealRow) => (
+              value === '-' ? (
+                <span style={{ color: '#888', opacity: 0.7 }}>{value}</span>
+              ) : (
+                <span
+                  style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setTenantInfoModalTenants(dealRow.tenant_info_full || []);
+                    setTenantInfoModalOpen(true);
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.opacity = 0.7; }}
+                  onMouseOut={e => { e.currentTarget.style.opacity = 1; }}
+                >
+                  {value}
+                </span>
+              )
+            )
+          }}
         />
       </Box>
     );
   };
+
+  const quickTabs = [
+    { label: 'Prelease', value: 'Prelease' },
+    { label: 'Renewal Check', value: 'Renewal Check' }
+    // Add more tabs as needed
+    // {
+    //   label: 'Renewal Check',
+    //   value: 'renewal_check',
+    //   filterOverrides: { ... }
+    // },
+  ];
+
+  const [selectedQuickTab, setSelectedQuickTab] = useState(null);
+
+  // Merge agg_filter with user filters
+  const mergedFilters = useMemo(() => {
+    const aggFilter = selectedQuickTab ? { agg_filter: selectedQuickTab } : {};
+    return { ...filters, ...aggFilter };
+  }, [filters, selectedQuickTab]);
+
+  useEffect(() => {
+    fetchData(mergedFilters);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mergedFilters]);
 
   return (
     <Box
@@ -784,24 +851,47 @@ const ClientDataView = () => {
       backgroundColor: '#ffffff'
         }}
     >
-      <Box sx={{ 
-        position: 'absolute', 
-        top: 0, 
-        right: 0, 
-        zIndex: 2, 
-        display: 'flex', 
-        alignItems: 'center',
-        marginBottom: '10px'
-      }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-        >
-          <Tab label="Data" />
-          <Tab label="Dashboard" />
-        </Tabs>
-        
-        <Tooltip title="Dashboard Settings">
+      {/* Controls Row: Filters (left), QuickFilterTabs (center), Tabs+Settings (right) */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1,
+          width: '100%',
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
+        {/* Left: Filters Button */}
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0, ml: 5 }}>
+          <FiltersComponent 
+            filtersConfig={filtersConfig} 
+            onApplyFilters={setFilters} 
+            initialFilters={filters}
+            data={tableData}
+            onFilterToggle={setIsFiltersOpen}
+          />
+        </Box>
+        {/* Center: QuickFilterTabs */}
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 0 }}>
+          <QuickFilterTabs
+            tabs={quickTabs}
+            selectedTab={selectedQuickTab}
+            onTabChange={setSelectedQuickTab}
+          />
+        </Box>
+        {/* Right: Tabs and Settings */}
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', minWidth: 0 }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            sx={{ minHeight: 40, height: 40 }}
+          >
+            <Tab label="Data" sx={{ minHeight: 40, height: 40 }} />
+            <Tab label="Dashboard" sx={{ minHeight: 40, height: 40 }} />
+          </Tabs>
           <IconButton 
             onClick={handleSettingsClick}
             size="medium"
@@ -809,79 +899,76 @@ const ClientDataView = () => {
           >
             <SettingsIcon />
           </IconButton>
-        </Tooltip>
-        
-        <Menu
-          anchorEl={settingsAnchorEl}
-          open={isSettingsMenuOpen}
-          onClose={handleSettingsClose}
-          MenuListProps={{
-            'aria-labelledby': 'settings-button',
-          }}
-        >
-          <MenuItem onClick={handleResetLayout}>Reset dashboard layout</MenuItem>
-          <MenuItem onClick={handleResetTableLayout}>Reset table layout</MenuItem>
-        </Menu>
+        </Box>
       </Box>
 
+      {/* Main Content: Table or Dashboard */}
       {activeTab === 0 && (
         <Box 
           sx={{ 
-            padding: '20px', 
-            paddingTop: '60px',
-            height: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'relative',
-          }}
-        >
-          <FiltersComponent 
-            filtersConfig={filtersConfig} 
-            onApplyFilters={handleApplyFilters} 
-            initialFilters={filters}
-            data={tableData}
-            onFilterToggle={setIsFiltersOpen}
-          />
-          
-          <Box sx={{ 
             flex: 1, 
             overflow: 'auto',
             position: 'relative',
             zIndex: 1,
             marginTop: isFiltersOpen ? '130px' : 0,
             transition: 'margin-top 0.15s ease-in-out',
-            height: 'calc(100vh - 200px)'
-          }}>
-            <TableComponent
-                data={tableData}
-                columns={dataConfig.columns}
-                onRowClick={handleRowClick}
-                renderExpandedContent={renderExpandedContent}
-                rowHeight={35}
-                headerHeight={45}
-                backgroundColor="#ffffff"
-                headerBackgroundColor="#f5f5f5"
-                headerTextColor="#333333"
-                cellTextColor="#555555"
-                cellPadding="2px"
-                cellPaddingLeft="8px"
-                page={page}
-                rowsPerPage={rowsPerPage}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                count={tableData.length}
-                orderBy={orderBy}
-                order={order}
-                onRequestSort={handleRequestSort}
-                pagination={true}
-                sortable={true}
-                stickyHeader={true}
-                setSelectedUnitForNotes={setSelectedUnitForNotes}
-                onNoteClick={handleOpenNotes}
-                enableExport={true}
-                exportFileName="client_data"
-            />
-          </Box>
+            height: 'calc(100vh - 60px)', // Reduce top padding so table is right below controls
+            padding: '0 20px', // Only horizontal padding
+          }}
+        >
+          <TableComponent
+              data={tableData}
+              columns={dataConfig.columns}
+              onRowClick={handleRowClick}
+              renderExpandedContent={renderExpandedContent}
+              rowHeight={35}
+              headerHeight={45}
+              backgroundColor="#ffffff"
+              headerBackgroundColor="#f5f5f5"
+              headerTextColor="#333333"
+              cellTextColor="#555555"
+              cellPadding="2px"
+              cellPaddingLeft="8px"
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              count={tableData.length}
+              orderBy={orderBy}
+              order={order}
+              onRequestSort={handleRequestSort}
+              pagination={true}
+              sortable={true}
+              stickyHeader={true}
+              setSelectedUnitForNotes={setSelectedUnitForNotes}
+              onNoteClick={handleOpenNotes}
+              enableExport={true}
+              exportFileName="client_data"
+              customCellRenderers={{
+                tenant_info_display: (value, row) => (
+                  value === '-' ? (
+                    <span style={{ color: '#888', opacity: 0.7 }}>{value}</span>
+                  ) : (
+                    <span
+                      style={{
+                      
+                        cursor: 'pointer',
+                        transition: 'opacity 0.15s',
+                      }}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setTenantInfoModalTenants(row.tenant_info_full || []);
+                        setTenantInfoModalOpen(true);
+                      }}
+                      onMouseOver={e => { e.currentTarget.style.opacity = 0.7; }}
+                      onMouseOut={e => { e.currentTarget.style.opacity = 1; }}
+                    >
+                      {value}
+                    </span>
+                  )
+                )
+              }}
+          />
         </Box>
       )}
 
@@ -1168,6 +1255,12 @@ const ClientDataView = () => {
           onNoteAdded={handleNoteAdded}
         />
       )}
+      {/* Tenant Info Modal */}
+      <TenantInfoComponent
+        open={tenantInfoModalOpen}
+        onClose={() => setTenantInfoModalOpen(false)}
+        tenants={tenantInfoModalTenants}
+      />
     </Box>
   );
 };

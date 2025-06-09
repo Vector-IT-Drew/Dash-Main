@@ -88,6 +88,7 @@ const TableComponent = ({
   setSelectedUnitForNotes,
   onNoteClick,
   tableId = 'default-table',
+  customCellRenderers = {},
 }) => {
   // State for column ordering
   const [columnOrder, setColumnOrder] = useState(() => {
@@ -699,6 +700,11 @@ const TableComponent = ({
                             maxHeight: rowHeight ? `${rowHeight}px` : undefined,
                             lineHeight: col.type === 'notes' ? 'normal' : (rowHeight ? `${rowHeight - 8}px` : undefined),
                           }}
+                          onClick={
+                            customCellRenderers && customCellRenderers[col.field]
+                              ? undefined // Don't attach row click to this cell
+                              : () => onRowClick(index, row)
+                          }
                         >
                           <div style={{ 
                             overflow: 'hidden', 
@@ -709,10 +715,15 @@ const TableComponent = ({
                             alignItems: 'center',
                             height: '100%'
                           }}>
-                            {col.type === 'button' ? (
+                            {customCellRenderers && customCellRenderers[col.field] ? (
+                              customCellRenderers[col.field](row[col.field], row)
+                            ) : col.type === 'button' ? (
                               <Button
                                 variant="contained"
-                                onClick={() => col.action(row)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  col.action(row);
+                                }}
                                 sx={col.buttonStyle}
                               >
                                 {col.label}

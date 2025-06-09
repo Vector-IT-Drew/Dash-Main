@@ -240,10 +240,6 @@ const FiltersComponent = ({ filtersConfig, onApplyFilters, initialFilters = {}, 
 
   return (
     <Box sx={{ 
-      position: 'absolute', 
-      top: 4, 
-      left: '70px', // Increased from '20px' to avoid overlap with menu icon
-      zIndex: 2,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-start',
