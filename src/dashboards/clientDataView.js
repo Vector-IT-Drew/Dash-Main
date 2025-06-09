@@ -19,6 +19,7 @@ import {
   getDownUnitsMetric,
   getAverageDaysOnMarket
 } from '../utils/metricCalculations';
+import { getRenewalHorizonColor } from '../utils/statusStyles';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
@@ -739,7 +740,8 @@ const ClientDataView = () => {
                   {value}
                 </span>
               )
-            )
+            ),
+            move_out: renderMoveOutDate
           }}
         />
       </Box>
@@ -769,6 +771,28 @@ const ClientDataView = () => {
     fetchData(mergedFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mergedFilters]);
+
+  // Helper function to render move-out dates with renewal horizon coloring
+  const renderMoveOutDate = (value, row) => {
+    if (!value || value === '-') {
+      return <span style={{ color: '#888', opacity: 0.7 }}>-</span>;
+    }
+
+    const formattedDate = formatDateWithoutTimezoneShift(value);
+    
+    // Apply renewal horizon coloring if that tab is selected
+    if (selectedQuickTab === 'renewal horizon') {
+      const colorStyle = getRenewalHorizonColor(value);
+      return (
+        <span style={colorStyle}>
+          {formattedDate}
+        </span>
+      );
+    }
+
+    // Default date rendering
+    return <span>{formattedDate}</span>;
+  };
 
   return (
     <Box
@@ -896,7 +920,8 @@ const ClientDataView = () => {
                       {value}
                     </span>
                   )
-                )
+                ),
+                move_out: renderMoveOutDate
               }}
           />
         </Box>

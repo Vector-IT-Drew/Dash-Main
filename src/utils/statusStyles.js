@@ -19,6 +19,65 @@ export const getStatusColor = (status) => {
   return statusColors[normalizedStatus] || statusColors.default;
 };
 
+// Generate blue color based on days until move-out for renewal horizon
+export const getRenewalHorizonColor = (dateValue) => {
+  if (!dateValue || dateValue === '-') {
+    return { color: '#999', backgroundColor: 'transparent' };
+  }
+
+  try {
+    const moveOutDate = new Date(dateValue);
+    const currentDate = new Date();
+    
+    // Calculate days difference
+    const timeDiff = moveOutDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    // Define color ranges - darker blue for dates further out
+    let color, backgroundColor;
+    
+    if (daysDiff < 0) {
+      // Past dates - dark red
+      color = '#fff';
+      backgroundColor = '#d32f2f';
+    } else if (daysDiff <= 30) {
+      // 0-30 days - light blue
+      color = '#fff';
+      backgroundColor = '#1976d2';
+    } else if (daysDiff <= 60) {
+      // 31-60 days - medium blue
+      color = '#fff';
+      backgroundColor = '#1565c0';
+    } else if (daysDiff <= 90) {
+      // 61-90 days - darker blue
+      color = '#fff';
+      backgroundColor = '#0d47a1';
+    } else if (daysDiff <= 180) {
+      // 91-180 days - very dark blue
+      color = '#fff';
+      backgroundColor = '#0a3d8a';
+    } else {
+      // 180+ days - darkest blue
+      color = '#fff';
+      backgroundColor = '#083372';
+    }
+    
+    return {
+      color,
+      backgroundColor,
+      padding: '2px 6px',
+      borderRadius: '4px',
+      fontWeight: '500',
+      border: `1px solid ${backgroundColor}`,
+      display: 'inline-block',
+      minWidth: '70px',
+      textAlign: 'center'
+    };
+  } catch (e) {
+    return { color: '#999', backgroundColor: 'transparent' };
+  }
+};
+
 // Format cell values for display
 export const formatCellValue = (value, type) => {
   // Handle null, undefined, NaN values
