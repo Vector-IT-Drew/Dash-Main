@@ -675,7 +675,7 @@ const ClientDataView = () => {
     });
 
     // Define columns for the unit deals table - compact version with alignment
-    const dealColumns = [
+    const baseDealColumns = [
       // Spacer to align with main table (dropdown + address + unit + lease_type + beds + baths + sqft + unit_status)
       { field: 'current_deal', headerName: '', type: 'current_deal_indicator', minWidth: '40px', maxWidth: '40px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
       { field: 'spacer_alignment', headerName: '', type: 'text', minWidth: '520px', maxWidth: '520px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
@@ -695,6 +695,18 @@ const ClientDataView = () => {
       { field: 'expiry', headerName: 'Expiry', type: 'date', minWidth: '105px', maxWidth: '105px', fontSize: '0.8rem'}, 
       { field: 'spacer_alignment_end', headerName: '', type: 'text', minWidth: '300px', maxWidth: '500px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
     ];
+
+    // Apply dynamic column types for renewal horizon
+    const dealColumns = baseDealColumns.map(col => {
+      if (col.field === 'move_out' && selectedQuickTab === 'renewal horizon') {
+        console.log('🎨 Setting expanded move_out column to date_color_ascending for renewal horizon');
+        return {
+          ...col,
+          type: 'date_color_ascending'
+        };
+      }
+      return col;
+    });
 
     return (
       <Box sx={{ display: 'block', width: 'fit-content', backgroundColor: '#eee', overflow: 'visible', border: 'none', borderRadius: 0, margin: 0, padding: 0 }}>
@@ -788,31 +800,6 @@ const ClientDataView = () => {
     });
     return baseColumns;
   }, [selectedQuickTab]);
-
-  // Helper function to render move-out dates with renewal horizon coloring
-  const renderMoveOutDate = (value, row) => {
-    if (!value || value === '-') {
-      return <span style={{ color: '#888', opacity: 0.7 }}>-</span>;
-    }
-
-    const formattedDate = formatDateWithoutTimezoneShift(value);
-    
-    // Apply renewal horizon coloring if that tab is selected
-    if (selectedQuickTab === 'renewal horizon') {
-      console.log('🎨 Applying renewal horizon coloring for date:', value, 'selectedTab:', selectedQuickTab);
-      const colorStyle = getRenewalHorizonColor(value);
-      console.log('🎨 Color style generated:', colorStyle);
-      return (
-        <span style={colorStyle}>
-          {formattedDate}
-        </span>
-      );
-    }
-
-    // Default date rendering for other tabs
-    console.log('📅 Default date rendering for:', value, 'selectedTab:', selectedQuickTab);
-    return <span>{formattedDate}</span>;
-  };
 
   return (
     <Box
