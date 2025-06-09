@@ -77,36 +77,22 @@ const Reports = () => {
 
   // Generate report handler
   const handleGenerate = (reportName) => {
-    // Immediate refresh after 1 second for user feedback
-    setTimeout(() => {
-      fetchReports();
-    }, 1000);
+    const sessionKey = getSessionKey();
     
-    // Use setTimeout to defer the API call to next tick (truly fire-and-forget)
-    setTimeout(() => {
-      const sessionKey = getSessionKey();
-      
-      // Fire-and-forget API call (completely non-blocking)
-      fetch(`${API_BASE_URL}/reports/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          session_key: sessionKey,
-          report_name: reportName,
-        }),
-      })
-      .then(() => {
-        // When background process completes, refresh data again
-        fetchReports();
-      })
-      .catch(error => {
-        console.error('Background report generation error:', error);
-        // Even if there's an error, refresh to show current state
-        fetchReports();
-      });
-    }, 0); // Defer to next event loop
+    // Just call the endpoint (fire and forget)
+    fetch(`${API_BASE_URL}/reports/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        session_key: sessionKey,
+        report_name: reportName,
+      }),
+    });
+    
+    // Immediately refresh data
+    fetchReports();
   };
 
   // Download report handler
