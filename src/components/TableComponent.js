@@ -90,6 +90,8 @@ const TableComponent = ({
   tableId = 'default-table',
   customCellRenderers = {},
   cellStyleOverride = null,
+  order,
+  orderBy,
   onRequestSort,
 }) => {
   // State for column ordering

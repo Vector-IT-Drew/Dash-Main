@@ -31,6 +31,7 @@ import QuickFilterTabs from '../components/QuickFilterTabs';
 
 // Dynamic sort mapping for quick tabs (moved outside component to avoid dependency issues)
 const quickTabSortMapping = {
+  'all': { column: 'move_out', direction: 'asc' },
   'renewal horizon': { column: 'expiry', direction: 'asc' },
   'vacancy horizon': { column: 'move_out', direction: 'asc' },
   'active deals': { column: 'deal_status', direction: 'asc' },
@@ -773,6 +774,7 @@ const ClientDataView = () => {
   };
 
   const quickTabs = [
+    { label: 'All', value: 'all' },
     { label: 'Active Deals', value: 'active deals' },
    
     { label: 'Renewal Horizon', value: 'renewal horizon' },
