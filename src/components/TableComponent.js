@@ -90,6 +90,7 @@ const TableComponent = ({
   tableId = 'default-table',
   customCellRenderers = {},
   cellStyleOverride = null,
+  onRequestSort,
 }) => {
   // State for column ordering
   const [columnOrder, setColumnOrder] = useState(() => {
@@ -156,8 +157,14 @@ const TableComponent = ({
 
   const [openRow, setOpenRow] = useState(null);
   const [tableWidth] = useState('100%');
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('');
+  
+  // Internal sorting state (used if not controlled from parent)
+  const [internalOrder, setInternalOrder] = useState('asc');
+  const [internalOrderBy, setInternalOrderBy] = useState('');
+  
+  // Use either controlled or internal sorting state
+  const currentOrder = order || internalOrder;
+  const currentOrderBy = orderBy || internalOrderBy;
   
   // Internal pagination state (used if not controlled from parent)
   const [internalPage, setInternalPage] = useState(0);
@@ -224,19 +231,19 @@ const TableComponent = ({
   };
 
   const sortedData = React.useMemo(() => {
-    if (!sortable || !orderBy) return data;
+    if (!sortable || !currentOrderBy) return data;
     // Inline sortData logic here
     return [...data].sort((a, b) => {
-      let aValue = a[orderBy];
-      let bValue = b[orderBy];
+      let aValue = a[currentOrderBy];
+      let bValue = b[currentOrderBy];
       
       // Handle empty values
       if (!aValue && !bValue) return 0;
-      if (!aValue) return order === 'asc' ? -1 : 1;
-      if (!bValue) return order === 'asc' ? 1 : -1;
+      if (!aValue) return currentOrder === 'asc' ? -1 : 1;
+      if (!bValue) return currentOrder === 'asc' ? 1 : -1;
       
       // Get column definition to determine type
-      const colDef = columns.find(col => col.field === orderBy);
+      const colDef = columns.find(col => col.field === currentOrderBy);
       const type = colDef ? colDef.type : 'text';
       
       // Handle different data types
@@ -246,10 +253,10 @@ const TableComponent = ({
         
         // Handle null dates
         if (!dateA && !dateB) return 0;
-        if (!dateA) return order === 'asc' ? -1 : 1;
-        if (!dateB) return order === 'asc' ? 1 : -1;
+        if (!dateA) return currentOrder === 'asc' ? -1 : 1;
+        if (!dateB) return currentOrder === 'asc' ? 1 : -1;
         
-        return order === 'asc' 
+        return currentOrder === 'asc' 
           ? dateA.getTime() - dateB.getTime() 
           : dateB.getTime() - dateA.getTime();
       } 
@@ -257,18 +264,18 @@ const TableComponent = ({
         // Convert to numbers for numeric comparison
         const numA = parseFloat(aValue) || 0;
         const numB = parseFloat(bValue) || 0;
-        return order === 'asc' ? numA - numB : numB - numA;
+        return currentOrder === 'asc' ? numA - numB : numB - numA;
       } 
       else {
         // Default string comparison
         const valueA = String(aValue).toLowerCase();
         const valueB = String(bValue).toLowerCase();
-        return order === 'asc' 
+        return currentOrder === 'asc' 
           ? valueA.localeCompare(valueB) 
           : valueB.localeCompare(valueA);
       }
     });
-  }, [data, order, orderBy, sortable, columns]);
+  }, [data, currentOrder, currentOrderBy, sortable, columns]);
 
   // Apply pagination to data if enabled
   const displayData = React.useMemo(() => {
@@ -585,9 +592,15 @@ const TableComponent = ({
   };
 
   const handleRequestSort = (property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
+    if (onRequestSort) {
+      // Use parent's sort handler if provided
+      onRequestSort(property);
+    } else {
+      // Use internal sort state if no parent handler
+      const isAsc = currentOrderBy === property && currentOrder === 'asc';
+      setInternalOrder(isAsc ? 'desc' : 'asc');
+      setInternalOrderBy(property);
+    }
   };
 
   // Pagination handlers
@@ -688,8 +701,8 @@ const TableComponent = ({
                             <SortableColumnHeader
                               column={col}
                               id={col.field}
-                              active={orderBy === col.field}
-                              direction={orderBy === col.field ? order : 'asc'}
+                              active={currentOrderBy === col.field}
+                              direction={currentOrderBy === col.field ? currentOrder : 'asc'}
                               onSort={sortable ? handleRequestSort : null}
                             />
                           </div>
