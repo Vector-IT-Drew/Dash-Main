@@ -358,6 +358,8 @@ const ClientDataView = () => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
+    setManualSortOverride(true); // User has manually sorted, disable auto-sort
+    console.log(`👆 Manual sort: ${property} ${isAsc ? 'desc' : 'asc'}`);
   };
 
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -786,10 +788,12 @@ const ClientDataView = () => {
   ];
 
   const [selectedQuickTab, setSelectedQuickTab] = useState(null);
+  const [manualSortOverride, setManualSortOverride] = useState(false);
 
-  // Auto-sort when quick tab changes
+  // Auto-sort when quick tab changes (but not if user has manually sorted)
   useEffect(() => {
     if (selectedQuickTab && quickTabSortMapping[selectedQuickTab]) {
+      setManualSortOverride(false); // Reset manual override when new tab selected
       const sortConfig = quickTabSortMapping[selectedQuickTab];
       setOrder(sortConfig.direction);
       setOrderBy(sortConfig.column);
@@ -801,6 +805,7 @@ const ClientDataView = () => {
   useEffect(() => {
     if (selectedQuickTab) {
       setSelectedQuickTab(null);
+      setManualSortOverride(false); // Reset manual sort override when filters change
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
