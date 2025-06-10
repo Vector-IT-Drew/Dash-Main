@@ -89,6 +89,7 @@ const TableComponent = ({
   onNoteClick,
   tableId = 'default-table',
   customCellRenderers = {},
+  cellStyleOverride = null,
 }) => {
   // State for column ordering
   const [columnOrder, setColumnOrder] = useState(() => {
@@ -167,11 +168,57 @@ const TableComponent = ({
   const currentRowsPerPage = onRowsPerPageChange ? rowsPerPage : internalRowsPerPage;
 
   const parseDate = (dateString) => {
-    if (!dateString || dateString === '-') {
+    if (!dateString || dateString === '-' || dateString === 'null') {
       return null;
     }
     
-    // Try to parse the date
+    // Handle different possible date formats
+    if (typeof dateString === 'string') {
+      // If it's a standard ISO date string with T separator
+      if (dateString.includes('T')) {
+        const [datePart] = dateString.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        
+        // Validate the date parts
+        if (isNaN(year) || isNaN(month) || isNaN(day)) {
+          return null;
+        }
+        
+        return new Date(year, month - 1, day);
+      } 
+      // If it's just a date string without time (YYYY-MM-DD)
+      else if (dateString.includes('-') && dateString.split('-').length === 3) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        
+        // Validate the date parts
+        if (isNaN(year) || isNaN(month) || isNaN(day)) {
+          return null;
+        }
+        
+        return new Date(year, month - 1, day);
+      }
+      // If it's in MM/DD/YY or MM/DD/YYYY format
+      else if (dateString.includes('/')) {
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+          let [month, day, year] = parts.map(Number);
+          
+          // Handle 2-digit years
+          if (year < 100) {
+            year += year < 50 ? 2000 : 1900;
+          }
+          
+          // Validate the date parts
+          if (isNaN(month) || isNaN(day) || isNaN(year)) {
+            return null;
+          }
+          
+          return new Date(year, month - 1, day);
+        }
+      }
+    }
+    
+    // Fallback to standard Date parsing
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? null : date;
   };
@@ -680,60 +727,81 @@ const TableComponent = ({
                           </IconButton>
                         </TableCell>
                       )}
-                      {orderedColumns.map((col) => (
-                        <TableCell
-                          key={col.field}
-                          style={{
-                            padding: col.type === 'iconButton' ? '0px' : (col.type === 'notes' ? '4px 8px' : cellPadding || '2px 4px'),
-                            paddingLeft: col.reduceLeftPadding ? '0px' : cellPaddingLeft,
-                            paddingRight: col.reduceRightPadding ? '0px' : undefined,
-                            color: col.color || cellTextColor,
-                            minWidth: col.minWidth || '50px',
-                            maxWidth: col.maxWidth || '200px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            textAlign: 'left',
-                            backgroundColor: col.backgroundColor || 'inherit',
-                            fontSize: col.fontSize || 'inherit',
-                            height: rowHeight ? `${rowHeight}px` : undefined,
-                            maxHeight: rowHeight ? `${rowHeight}px` : undefined,
-                            lineHeight: col.type === 'notes' ? 'normal' : (rowHeight ? `${rowHeight - 8}px` : undefined),
-                          }}
-                          onClick={
-                            customCellRenderers && customCellRenderers[col.field]
-                              ? undefined // Don't attach row click to this cell
-                              : () => onRowClick(index, row)
+                      {orderedColumns.map((col) => {
+                        // Check if custom renderer returns styling info
+                        let cellContent, customCellStyleOverride;
+                        if (customCellRenderers && customCellRenderers[col.field]) {
+                          const renderResult = customCellRenderers[col.field](row[col.field], row);
+                          if (renderResult && typeof renderResult === 'object' && renderResult.cellStyle) {
+                            cellContent = renderResult.content;
+                            customCellStyleOverride = renderResult.cellStyle;
+                          } else {
+                            cellContent = renderResult;
                           }
-                        >
-                          <div style={{ 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            whiteSpace: col.type === 'notes' ? 'normal' : 'nowrap',
-                            maxHeight: rowHeight ? `${rowHeight - 4}px` : undefined,
-                            display: 'flex',
-                            alignItems: 'center',
-                            height: '100%'
-                          }}>
-                            {customCellRenderers && customCellRenderers[col.field] ? (
-                              customCellRenderers[col.field](row[col.field], row)
-                            ) : col.type === 'button' ? (
-                              <Button
-                                variant="contained"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  col.action(row);
-                                }}
-                                sx={col.buttonStyle}
-                              >
-                                {col.label}
-                              </Button>
-                            ) : (
-                              renderCellContent(col.type, row[col.field], row, col.renderCell)
-                            )}
-                          </div>
-                        </TableCell>
-                      ))}
+                        }
+
+                        // Apply cell style override from prop
+                        const propCellStyleOverride = cellStyleOverride && cellStyleOverride(col.field, col.type, row[col.field]);
+                        
+                        return (
+                          <TableCell
+                            key={col.field}
+                            style={{
+                              padding: col.type === 'iconButton' ? '0px' : (col.type === 'notes' ? '4px 8px' : cellPadding || '2px 4px'),
+                              paddingLeft: col.reduceLeftPadding ? '0px' : cellPaddingLeft,
+                              paddingRight: col.reduceRightPadding ? '0px' : undefined,
+                              color: col.color || cellTextColor,
+                              minWidth: col.minWidth || '50px',
+                              maxWidth: col.maxWidth || '200px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              textAlign: 'left',
+                              backgroundColor: col.backgroundColor || 'inherit',
+                              fontSize: col.fontSize || 'inherit',
+                              height: rowHeight ? `${rowHeight}px` : undefined,
+                              maxHeight: rowHeight ? `${rowHeight}px` : undefined,
+                              lineHeight: col.type === 'notes' ? 'normal' : (rowHeight ? `${rowHeight - 8}px` : undefined),
+                              // Apply custom cell styling if provided by custom renderer
+                              ...(customCellStyleOverride || {}),
+                              // Apply cell style override from prop (takes precedence)
+                              ...(propCellStyleOverride || {})
+                            }}
+                            onClick={
+                              customCellRenderers && customCellRenderers[col.field]
+                                ? undefined // Don't attach row click to this cell
+                                : () => onRowClick(index, row)
+                            }
+                          >
+                            <div style={{ 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              whiteSpace: col.type === 'notes' ? 'normal' : 'nowrap',
+                              maxHeight: rowHeight ? `${rowHeight - 4}px` : undefined,
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: '100%'
+                            }}>
+                              {customCellRenderers && customCellRenderers[col.field] ? (
+                                cellContent !== undefined ? cellContent : customCellRenderers[col.field](row[col.field], row)
+                              ) : col.type === 'button' ? (
+                                <Button
+                                  variant="contained"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    col.action(row);
+                                  }}
+                                  sx={col.buttonStyle}
+                                >
+                                  {col.label}
+                                </Button>
+                              ) : (
+                                renderCellContent(col.type, row[col.field], row, col.renderCell)
+                              )}
+                            </div>
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                     {!disableDropdown && (
                       <TableRow>

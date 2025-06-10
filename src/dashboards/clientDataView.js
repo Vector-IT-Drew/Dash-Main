@@ -19,7 +19,6 @@ import {
   getDownUnitsMetric,
   getAverageDaysOnMarket
 } from '../utils/metricCalculations';
-import { getRenewalHorizonColor } from '../utils/statusStyles';
 import HomeIcon from '@mui/icons-material/Home';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
@@ -696,10 +695,10 @@ const ClientDataView = () => {
       { field: 'spacer_alignment_end', headerName: '', type: 'text', minWidth: '300px', maxWidth: '500px', fontSize: '0.8rem'}, // 35+200+70+90+40+55+65+120 = 675px
     ];
 
-    // Apply dynamic column types for renewal horizon
+    // Override start_date column type for renewal horizon
     const dealColumns = baseDealColumns.map(col => {
-      if (col.field === 'move_out' && selectedQuickTab === 'renewal horizon') {
-        console.log('🎨 Setting expanded move_out column to date_color_ascending for renewal horizon');
+      if (col.field === 'expiry' && selectedQuickTab === 'renewal horizon') {
+        console.log('🎨 Setting expanded expiry column to date_color_ascending for renewal horizon');
         return {
           ...col,
           type: 'date_color_ascending'
@@ -732,21 +731,21 @@ const ClientDataView = () => {
           columnHeight={24}
           pagination={false}
           showHeaders={false}
-          enableExport={true}
-          exportFileName="client_data"
+          enableExport={false}
+          cellStyleOverride={(columnField, columnType, value) => 
+            getCellStyleOverride(columnField, columnType, value, selectedQuickTab)
+          }
+          // Custom cell renderers for expanded table
           customCellRenderers={{
-            tenant_info_display: (value, row) => (
+            tenant_info_display: (value, dealRow) => (
               value === '-' ? (
                 <span style={{ color: '#888', opacity: 0.7 }}>{value}</span>
               ) : (
                 <span
-                  style={{
-                    cursor: 'pointer',
-                    transition: 'opacity 0.15s',
-                  }}
+                  style={{ cursor: 'pointer', transition: 'opacity 0.15s' }}
                   onClick={e => {
                     e.stopPropagation();
-                    setTenantInfoModalTenants(row.tenant_info_full || []);
+                    setTenantInfoModalTenants(dealRow.tenant_info_full || []);
                     setTenantInfoModalOpen(true);
                   }}
                   onMouseOver={e => { e.currentTarget.style.opacity = 0.7; }}
@@ -755,7 +754,7 @@ const ClientDataView = () => {
                   {value}
                 </span>
               )
-            )
+            ),
           }}
         />
       </Box>
@@ -763,8 +762,12 @@ const ClientDataView = () => {
   };
 
   const quickTabs = [
-    { label: '4/1/25 Onwards', value: '4/1/25 onwards' },
-    { label: 'Renewal Horizon', value: 'renewal horizon' }
+    { label: 'Active Deals', value: 'active deals' },
+   
+    { label: 'Renewal Horizon', value: 'renewal horizon' },
+  
+    { label: 'Vacancy Horizon', value: 'vacancy horizon' },
+    { label: '4/1/25 Onwards', value: '4/1/25 onwards' }
     // Add more tabs as needed
     // {
     //   label: 'Renewal Check',
@@ -773,7 +776,34 @@ const ClientDataView = () => {
     // },
   ];
 
+  // Dynamic sort mapping for quick tabs
+  const quickTabSortMapping = {
+    'renewal horizon': { column: 'expiry', direction: 'asc' },
+    'vacancy horizon': { column: 'move_out', direction: 'asc' },
+    'active deals': { column: 'deal_status', direction: 'asc' },
+    '4/1/25 onwards': { column: 'move_out', direction: 'asc' }
+    // Add more mappings as needed
+  };
+
   const [selectedQuickTab, setSelectedQuickTab] = useState(null);
+
+  // Auto-sort when quick tab changes
+  useEffect(() => {
+    if (selectedQuickTab && quickTabSortMapping[selectedQuickTab]) {
+      const sortConfig = quickTabSortMapping[selectedQuickTab];
+      setOrder(sortConfig.direction);
+      setOrderBy(sortConfig.column);
+      console.log(`🔄 Auto-sorting by ${sortConfig.column} (${sortConfig.direction}) for tab: ${selectedQuickTab}`);
+    }
+  }, [selectedQuickTab]);
+
+  // Clear quick tab selection when filters change
+  useEffect(() => {
+    if (selectedQuickTab) {
+      setSelectedQuickTab(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // Merge agg_filter with user filters
   const mergedFilters = useMemo(() => {
@@ -786,20 +816,52 @@ const ClientDataView = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mergedFilters]);
 
+  // Simple function to override cell styles based on conditions
+  const getCellStyleOverride = (columnField, columnType, value, selectedTab) => {
+    // Only apply to expiry column when renewal horizon tab is selected
+    if (columnField === 'expiry' && selectedTab === 'renewal horizon' && value && value !== '-') {
+      const targetDate = new Date(value);
+      const today = new Date();
+      const daysDiff = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+      
+      // Create a smooth red-to-white gradient
+      let backgroundColor, color;
+      
+      if (daysDiff < 0) {
+        // Past dates - solid red
+        backgroundColor = '#d32f2f';
+        color = '#fff';
+      } else if (daysDiff <= 90) {
+        // 0-90 days: smooth gradient from red to white
+        const ratio = Math.min(daysDiff / 90, 1); // 0 to 1
+        const red = Math.round(211 + (255 - 211) * ratio); // 211 (d3) to 255 (ff)
+        const green = Math.round(47 + (255 - 47) * ratio); // 47 (2f) to 255 (ff)
+        const blue = Math.round(47 + (255 - 47) * ratio); // 47 (2f) to 255 (ff)
+        
+        backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+        color = ratio > 0.6 ? '#000' : '#fff'; // Switch text color for readability
+      } else {
+        // 90+ days - very light pink/white
+        backgroundColor = '#fff5f5';
+        color = '#000';
+      }
+      
+      return {
+        backgroundColor,
+        color,
+        padding: '1px 4px',
+        textAlign: 'center',
+        fontWeight: '500'
+      };
+    }
+    return null; // no override
+  };
+
   // Dynamic columns configuration based on selected quick tab
   const dynamicColumns = useMemo(() => {
-    const baseColumns = dataConfig.columns.map(col => {
-      if (col.field === 'move_out' && selectedQuickTab === 'renewal horizon') {
-        console.log('🎨 Setting move_out column to date_color_ascending for renewal horizon');
-        return {
-          ...col,
-          type: 'date_color_ascending'
-        };
-      }
-      return col;
-    });
-    return baseColumns;
-  }, [selectedQuickTab]);
+    // Keep all columns as their original types for proper sorting
+    return dataConfig.columns;
+  }, [selectedQuickTab, dataConfig.columns]);
 
   return (
     <Box
@@ -905,6 +967,9 @@ const ClientDataView = () => {
               onNoteClick={handleOpenNotes}
               enableExport={true}
               exportFileName="client_data"
+              cellStyleOverride={(columnField, columnType, value) => 
+                getCellStyleOverride(columnField, columnType, value, selectedQuickTab)
+              }
               customCellRenderers={{
                 tenant_info_display: (value, row) => (
                   value === '-' ? (
@@ -926,7 +991,7 @@ const ClientDataView = () => {
                       {value}
                     </span>
                   )
-                )
+                ),
               }}
           />
         </Box>
