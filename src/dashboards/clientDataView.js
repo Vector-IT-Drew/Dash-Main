@@ -153,6 +153,20 @@ const ClientDataView = () => {
         return '-';
       })();
 
+      // Helper function to convert date strings to Date objects
+      const parseDate = (dateString) => {
+        if (!dateString || dateString === '-' || dateString === 'null' || dateString === null) {
+          return null;
+        }
+        
+        try {
+          const date = new Date(dateString);
+          return isNaN(date.getTime()) ? null : date;
+        } catch (e) {
+          return null;
+        }
+      };
+
       return {
         id: item.id || 0,
         address: item.address || '-',
@@ -178,11 +192,11 @@ const ClientDataView = () => {
         previous_actual_rent: item.previous_actual_rent || '-',
         concession: item.concession || '-',
         term: item.term || '-',
-        move_in: item.move_in || '-',
-        start_date: item.start_date || '-',
-        move_out: item.move_out || '-',
-        previous_move_out: item.previous_move_out || '-',
-        expiry: item.expiry || '-',
+        move_in: parseDate(item.move_in),
+        start_date: parseDate(item.start_date),
+        move_out: parseDate(item.move_out),
+        previous_move_out: parseDate(item.previous_move_out),
+        expiry: parseDate(item.expiry),
         portfolio: item.portfolio || '-',
         unit_id: item.unit_id || item.id || item.UnitID,
         most_recent_note: item.most_recent_note || '',
@@ -662,13 +676,27 @@ const ClientDataView = () => {
         return '-';
       })();
 
+      // Helper function to convert date strings to Date objects
+      const parseDate = (dateString) => {
+        if (!dateString || dateString === '-' || dateString === 'null' || dateString === null) {
+          return null;
+        }
+        
+        try {
+          const date = new Date(dateString);
+          return isNaN(date.getTime()) ? null : date;
+        } catch (e) {
+          return null;
+        }
+      };
+
       return {
         ...deal,
         spacer_alignment: '',
-        start_date: deal.start_date || '-',
-        expiry: deal.expiry || '-',
-        move_in: deal.move_in || '-',
-        move_out: deal.move_out || '-',
+        start_date: parseDate(deal.start_date),
+        expiry: parseDate(deal.expiry),
+        move_in: parseDate(deal.move_in),
+        move_out: parseDate(deal.move_out),
         gross_change: grossChangeFormatted,
         gross_change_value: grossChange,
         rent_change: rentChangeFormatted,
@@ -826,8 +854,9 @@ const ClientDataView = () => {
   // Simple function to override cell styles based on conditions
   const getCellStyleOverride = (columnField, columnType, value, selectedTab) => {
     // Only apply to expiry column when renewal horizon tab is selected
-    if (columnField === 'expiry' && selectedTab === 'renewal horizon' && value && value !== '-') {
-      const targetDate = new Date(value);
+    if (columnField === 'expiry' && selectedTab === 'renewal horizon' && value && value !== '-' && value !== null) {
+      // Handle Date objects directly
+      const targetDate = value instanceof Date ? value : new Date(value);
       const today = new Date();
       const daysDiff = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
       

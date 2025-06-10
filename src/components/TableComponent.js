@@ -250,13 +250,29 @@ const TableComponent = ({
       
       // Handle different data types
       if (type === 'date') {
-        const dateA = parseDate(aValue);
-        const dateB = parseDate(bValue);
+        // Handle Date objects directly, or parse strings
+        let dateA, dateB;
+        
+        if (aValue instanceof Date) {
+          dateA = aValue;
+        } else if (aValue) {
+          dateA = parseDate(aValue);
+        } else {
+          dateA = null;
+        }
+        
+        if (bValue instanceof Date) {
+          dateB = bValue;
+        } else if (bValue) {
+          dateB = parseDate(bValue);
+        } else {
+          dateB = null;
+        }
         
         // Handle null dates
         if (!dateA && !dateB) return 0;
-        if (!dateA) return currentOrder === 'asc' ? -1 : 1;
-        if (!dateB) return currentOrder === 'asc' ? 1 : -1;
+        if (!dateA) return currentOrder === 'asc' ? 1 : -1; // null dates go to end
+        if (!dateB) return currentOrder === 'asc' ? -1 : 1; // null dates go to end
         
         return currentOrder === 'asc' 
           ? dateA.getTime() - dateB.getTime() 
