@@ -745,8 +745,8 @@ const TableComponent = ({
                       onClick={() => handleRowClick(index, row)}
                       style={{
                         height: rowHeight ? `${rowHeight}px` : undefined,
-                        maxHeight: rowHeight ? `${rowHeight}px` : undefined,
-                        minHeight: rowHeight ? `${rowHeight}px` : undefined,
+                        maxHeight: rowHeight ? `${rowHeight}px` : '35px',
+                        minHeight: rowHeight ? `${rowHeight}px` : '35px',
                         backgroundColor,
                         boxSizing: 'border-box',
                       }}
@@ -772,7 +772,7 @@ const TableComponent = ({
                         }
 
                         // Apply cell style override from prop
-                        const propCellStyleOverride = cellStyleOverride && cellStyleOverride(col.field, col.type, row[col.field]);
+                        const propCellStyleOverride = cellStyleOverride && cellStyleOverride(col.field, col.type, row[col.field], row);
                         
                         return (
                           <TableCell
@@ -790,9 +790,9 @@ const TableComponent = ({
                               textAlign: 'left',
                               backgroundColor: col.backgroundColor || 'inherit',
                               fontSize: col.fontSize || 'inherit',
-                              height: rowHeight ? `${rowHeight}px` : undefined,
-                              maxHeight: rowHeight ? `${rowHeight}px` : undefined,
-                              lineHeight: col.type === 'notes' ? 'normal' : (rowHeight ? `${rowHeight - 8}px` : undefined),
+                              height: rowHeight ? `${rowHeight}px` : '35px',
+                              maxHeight: rowHeight ? `${rowHeight}px` : '35px',
+                              lineHeight: col.type === 'notes' ? 'normal' : (rowHeight ? `${rowHeight - 8}px` : '27px'),
                               // Apply custom cell styling if provided by custom renderer
                               ...(customCellStyleOverride || {}),
                               // Apply cell style override from prop (takes precedence)
@@ -808,7 +808,7 @@ const TableComponent = ({
                               overflow: 'hidden', 
                               textOverflow: 'ellipsis', 
                               whiteSpace: col.type === 'notes' ? 'normal' : 'nowrap',
-                              maxHeight: rowHeight ? `${rowHeight - 4}px` : undefined,
+                              maxHeight: rowHeight ? `${rowHeight - 4}px` : '31px',
                               display: 'flex',
                               alignItems: 'center',
                               height: '100%'

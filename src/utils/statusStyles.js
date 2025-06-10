@@ -61,18 +61,25 @@ export const formatCellValue = (value, type) => {
       const numValue = typeof value === 'number' ? value : parseFloat(value);
       if (isNaN(numValue)) return '-';
       
-      // Check if the value has cents (decimal places)
-      const hasCents = numValue % 1 !== 0;
-      
-      return `$${numValue.toLocaleString('en-US', { 
-        minimumFractionDigits: hasCents ? 2 : 0, 
+      // Format with up to 2 decimal places, but remove unnecessary .00
+      let formatted = numValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 0, 
         maximumFractionDigits: 2 
-      })}`;
+      });
+      
+      return `$${formatted}`;
     
     case 'number':
-      return typeof value === 'number'
-        ? value.toLocaleString('en-US')
-        : (value === '-' ? '-' : parseFloat(value).toLocaleString('en-US'));
+      if (value === '-') return '-';
+      
+      const numberValue = typeof value === 'number' ? value : parseFloat(value);
+      if (isNaN(numberValue)) return '-';
+      
+      // Format with up to 2 decimal places, but remove unnecessary .00
+      return numberValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 0, 
+        maximumFractionDigits: 2 
+      });
     
     case 'percentage_change':
       if (value === '-' || value === null || value === undefined) {
@@ -85,8 +92,16 @@ export const formatCellValue = (value, type) => {
         };
       }
       
+      // Clean the value - remove .00 if present
+      let cleanValue = value;
+      if (typeof value === 'string' && value.endsWith('.00%')) {
+        cleanValue = value.replace('.00%', '%');
+      } else if (typeof value === 'string' && value.includes('.00')) {
+        cleanValue = value.replace('.00', '');
+      }
+      
       // Check if the value starts with '+' to determine if it's positive
-      const isPositive = value.startsWith('+');
+      const isPositive = cleanValue.startsWith('+');
       return {
         component: 'span',
         props: {
@@ -102,7 +117,7 @@ export const formatCellValue = (value, type) => {
             height: 'fit-content',
             minHeight: 'unset'
           },
-          children: value
+          children: cleanValue
         }
       };
     

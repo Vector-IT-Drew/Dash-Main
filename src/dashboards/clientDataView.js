@@ -373,7 +373,6 @@ const ClientDataView = () => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
-    setManualSortOverride(true); // User has manually sorted, disable auto-sort
     console.log(`👆 Manual sort: ${property} ${isAsc ? 'desc' : 'asc'}`);
   };
 
@@ -577,67 +576,6 @@ const ClientDataView = () => {
     }
   };
 
-  const formatDateWithoutTimezoneShift = (dateString) => {
-    if (!dateString || dateString === '-' || dateString === 'null') return '-';
-    
-    try {
-      // Handle different possible date formats
-      if (typeof dateString === 'string') {
-        // If it's a standard ISO date string with T separator
-        if (dateString.includes('T')) {
-          const [datePart] = dateString.split('T');
-          const [year, month, day] = datePart.split('-').map(Number);
-          
-          // Validate the date parts
-          if (isNaN(year) || isNaN(month) || isNaN(day)) {
-            return dateString; // Return original if parsing failed
-          }
-          
-          return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${String(year).slice(-2)}`;
-        } 
-        // If it's just a date string without time (YYYY-MM-DD)
-        else if (dateString.includes('-')) {
-          const [year, month, day] = dateString.split('-').map(Number);
-          
-          // Validate the date parts
-          if (isNaN(year) || isNaN(month) || isNaN(day)) {
-            return dateString; // Return original if parsing failed
-          }
-          
-          return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${String(year).slice(-2)}`;
-        }
-        // If it's already in MM/DD/YYYY format
-        else if (dateString.includes('/')) {
-          const parts = dateString.split('/');
-          if (parts.length === 3) {
-            const [month, day, year] = parts.map(Number);
-            
-            // Validate the date parts
-            if (isNaN(month) || isNaN(day) || isNaN(year)) {
-              return dateString; // Return original if parsing failed
-            }
-            
-            return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${String(year).toString().slice(-2)}`;
-          }
-        }
-      }
-      
-      // Fallback to standard Date object with timezone handling
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        // Add one day to compensate for timezone issues
-        date.setDate(date.getDate());
-        return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
-      }
-      
-      // If all else fails, return the original string
-      return dateString;
-    } catch (error) {
-      console.error('Error formatting date:', error, dateString);
-      return dateString; // Return the original string if there's an error
-    }
-  };
-
   // Add state for tenant info modal
   const [tenantInfoModalOpen, setTenantInfoModalOpen] = useState(false);
   const [tenantInfoModalTenants, setTenantInfoModalTenants] = useState([]);
@@ -772,8 +710,8 @@ const ClientDataView = () => {
           pagination={false}
           showHeaders={false}
           enableExport={false}
-          cellStyleOverride={(columnField, columnType, value) => 
-            getCellStyleOverride(columnField, columnType, value, selectedQuickTab)
+          cellStyleOverride={(columnField, columnType, value, dealRow) => 
+            getCellStyleOverride(columnField, columnType, value, selectedQuickTab, dealRow, false)
           }
           // Custom cell renderers for expanded table
           customCellRenderers={{
@@ -818,12 +756,10 @@ const ClientDataView = () => {
   ];
 
   const [selectedQuickTab, setSelectedQuickTab] = useState(null);
-  const [manualSortOverride, setManualSortOverride] = useState(false);
 
   // Auto-sort when quick tab changes (but not if user has manually sorted)
   useEffect(() => {
     if (selectedQuickTab && quickTabSortMapping[selectedQuickTab]) {
-      setManualSortOverride(false); // Reset manual override when new tab selected
       const sortConfig = quickTabSortMapping[selectedQuickTab];
       setOrder(sortConfig.direction);
       setOrderBy(sortConfig.column);
@@ -835,7 +771,6 @@ const ClientDataView = () => {
   useEffect(() => {
     if (selectedQuickTab) {
       setSelectedQuickTab(null);
-      setManualSortOverride(false); // Reset manual sort override when filters change
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
@@ -852,7 +787,22 @@ const ClientDataView = () => {
   }, [mergedFilters]);
 
   // Simple function to override cell styles based on conditions
-  const getCellStyleOverride = (columnField, columnType, value, selectedTab) => {
+  const getCellStyleOverride = (columnField, columnType, value, selectedTab, row, isMainTable = true) => {
+    // Check for entire row coloring first (takes precedence) - only for main table
+    if (isMainTable && selectedTab === '4/1/25 onwards' && row && row.move_in && row.start_date) {
+      // Compare dates - handle both Date objects and null values
+      const moveInDate = row.move_in instanceof Date ? row.move_in : null;
+      const startDate = row.start_date instanceof Date ? row.start_date : null;
+      
+      if (moveInDate && startDate && moveInDate.getTime() === startDate.getTime()) {
+        // Entire row gets light purple background
+        return {
+          backgroundColor: '#f3e5f5', // Light purple
+          color: '#000',
+        };
+      }
+    }
+    
     // Only apply to expiry column when renewal horizon tab is selected
     if (columnField === 'expiry' && selectedTab === 'renewal horizon' && value && value !== '-' && value !== null) {
       // Handle Date objects directly
@@ -860,25 +810,25 @@ const ClientDataView = () => {
       const today = new Date();
       const daysDiff = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
       
-      // Create a smooth red-to-white gradient
+      // Create a smooth yellow-to-white gradient
       let backgroundColor, color;
       
       if (daysDiff < 0) {
-        // Past dates - solid red
-        backgroundColor = '#d32f2f';
+        // Past dates - solid orange/amber
+        backgroundColor = '#ff8f00';
         color = '#fff';
       } else if (daysDiff <= 90) {
-        // 0-90 days: smooth gradient from red to white
+        // 0-90 days: smooth gradient from yellow to white
         const ratio = Math.min(daysDiff / 90, 1); // 0 to 1
-        const red = Math.round(211 + (255 - 211) * ratio); // 211 (d3) to 255 (ff)
-        const green = Math.round(47 + (255 - 47) * ratio); // 47 (2f) to 255 (ff)
-        const blue = Math.round(47 + (255 - 47) * ratio); // 47 (2f) to 255 (ff)
+        const red = Math.round(255 + (255 - 255) * ratio); // Keep red at 255
+        const green = Math.round(193 + (255 - 193) * ratio); // 193 (yellow) to 255 (white)
+        const blue = Math.round(7 + (255 - 7) * ratio); // 7 (yellow) to 255 (white)
         
         backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-        color = ratio > 0.6 ? '#000' : '#fff'; // Switch text color for readability
+        color = ratio > 0.6 ? '#000' : '#333'; // Switch text color for readability
       } else {
-        // 90+ days - very light pink/white
-        backgroundColor = '#fff5f5';
+        // 90+ days - very light yellow/white
+        backgroundColor = '#fffef0';
         color = '#000';
       }
       
@@ -1003,8 +953,8 @@ const ClientDataView = () => {
               onNoteClick={handleOpenNotes}
               enableExport={true}
               exportFileName="client_data"
-              cellStyleOverride={(columnField, columnType, value) => 
-                getCellStyleOverride(columnField, columnType, value, selectedQuickTab)
+              cellStyleOverride={(columnField, columnType, value, dealRow) => 
+                getCellStyleOverride(columnField, columnType, value, selectedQuickTab, dealRow, true)
               }
               customCellRenderers={{
                 tenant_info_display: (value, row) => (
