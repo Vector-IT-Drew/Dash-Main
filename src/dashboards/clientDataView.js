@@ -29,6 +29,15 @@ import CircularProgress from '@mui/material/CircularProgress';
 import TenantInfoComponent from '../components/TenantInfoComponent';
 import QuickFilterTabs from '../components/QuickFilterTabs';
 
+// Dynamic sort mapping for quick tabs (moved outside component to avoid dependency issues)
+const quickTabSortMapping = {
+  'renewal horizon': { column: 'expiry', direction: 'asc' },
+  'vacancy horizon': { column: 'move_out', direction: 'asc' },
+  'active deals': { column: 'deal_status', direction: 'asc' },
+  '4/1/25 onwards': { column: 'move_out', direction: 'asc' }
+  // Add more mappings as needed
+};
+
 const ClientDataView = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [tableData, setTableData] = useState([]);
@@ -776,15 +785,6 @@ const ClientDataView = () => {
     // },
   ];
 
-  // Dynamic sort mapping for quick tabs
-  const quickTabSortMapping = {
-    'renewal horizon': { column: 'expiry', direction: 'asc' },
-    'vacancy horizon': { column: 'move_out', direction: 'asc' },
-    'active deals': { column: 'deal_status', direction: 'asc' },
-    '4/1/25 onwards': { column: 'move_out', direction: 'asc' }
-    // Add more mappings as needed
-  };
-
   const [selectedQuickTab, setSelectedQuickTab] = useState(null);
 
   // Auto-sort when quick tab changes
@@ -861,7 +861,7 @@ const ClientDataView = () => {
   const dynamicColumns = useMemo(() => {
     // Keep all columns as their original types for proper sorting
     return dataConfig.columns;
-  }, [selectedQuickTab, dataConfig.columns]);
+  }, [dataConfig.columns]);
 
   return (
     <Box
